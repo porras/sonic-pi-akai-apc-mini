@@ -8,8 +8,13 @@ module SonicPiAkaiApcMini
     def fader(n, target = (0..1), _options = {})
       # TODO: Try to optimize speed, there is some latency because the
       # controller send a lot of events (too much granularity)
-      value = get("fader_#{n + 47}", 0)
+      value = get("fader_#{n}", 0)
       Helpers.normalize(value, target)
+    end
+
+    def attach_fader(n, node, property, target = (0..1))
+      control node, property => fader(n, target)
+      set "attached_fader_#{n}", node: node, property: property, target: target
     end
 
     def loop_rows(duration, rows)
@@ -36,11 +41,6 @@ module SonicPiAkaiApcMini
         end
         sleep duration / 8.0
       end
-    end
-
-    def attach_fader(n, node, property, target = (0..1))
-      control node, property => fader(n, target)
-      set "attached_fader_#{n + 47}", node: node, property: property, target: target
     end
 
     def reset_free_play((row, col), size)
@@ -82,9 +82,9 @@ module SonicPiAkaiApcMini
       live_loop :faders do
         use_real_time
         n, value = sync('/midi:apc_mini_apc_mini_midi_1_20_0:1/control_change')
-        set "fader_#{n}", value
-        midi_note_on n + 16, value.zero? ? 0 : 1
-        if attachment = get("attached_fader_#{n}")
+        set "fader_#{n - 48}", value
+        midi_note_on n - 48 + 64, value.zero? ? 0 : 1
+        if attachment = get("attached_fader_#{n - 48}")
           normalized_value = Helpers.normalize(value, attachment[:target])
           control attachment[:node], attachment[:property] => normalized_value
         end
