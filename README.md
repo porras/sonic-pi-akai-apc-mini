@@ -16,7 +16,7 @@ You should _probably_ not use this yet for live performances, at least without h
 
 ## Installation
 
-Download, clone the code or install the gem, then add this to the top of your Sonic Pi buffer (or your `~/.sonic-pi/config/init.rb`):
+[Download](https://github.com/porras/sonic-pi-akai-apc-mini/archive/refs/heads/main.zip), clone the code or install [the gem](https://rubygems.org/gems/sonic-pi-akai-apc-mini), then add this to the top of your Sonic Pi buffer (or your `~/.sonic-pi/config/init.rb`):
 
 ```ruby
 require '<path-to-sonic-pi-akai-apc-mini>/init.rb'
