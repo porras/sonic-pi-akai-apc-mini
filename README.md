@@ -1,4 +1,4 @@
-# Using the Akai APC mini to control Sonic Pi
+# Using the Akai APC mini to control Sonic Pi ![(build status)](https://github.com/porras/sonic-pi-akai-apc-mini/actions/workflows/main.yml/badge.svg)
 
 A collection of utility functions to use the [Akai APC mini](https://www.akaipro.com/apc-mini) MIDI controller with [Sonic Pi](https://sonic-pi.net/).
 
