@@ -28,7 +28,7 @@ module SonicPiAkaiApcMini
         midi_note_on (first_row * 8) + prev, get("switch_#{(first_row * 8) + prev}") ? 1 : 0
         midi_note_on (first_row * 8) + beat, 5
         rows.each do |row, sound|
-          sound.call if get("switch_#{(row * 8) + beat}")
+          in_thread(&sound) if get("switch_#{(row * 8) + beat}")
         end
         sleep duration / 8.0
       end
