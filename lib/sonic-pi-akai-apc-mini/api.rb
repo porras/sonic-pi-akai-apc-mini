@@ -47,16 +47,16 @@ module SonicPiAkaiApcMini
       end
     end
 
-    def reset_free_play((row, col), size)
+    def reset_free_play(row, col, size)
       size = size.size unless size.is_a?(Integer) # so we can pass the same ring
-      Helpers.key_range([row, col], size).each do |key|
+      Helpers.key_range(row, col, size).each do |key|
         midi_note_on key, 0
         set "free_play_#{key}", nil
       end
     end
 
-    def free_play((row, col), notes, options = {})
-      Helpers.key_range([row, col], notes.size).each.with_index do |key, i|
+    def free_play(row, col, notes, options = {})
+      Helpers.key_range(row, col, notes.size).each.with_index do |key, i|
         midi_note_on key, 5
         set "free_play_#{key}", notes[i]
       end
@@ -68,9 +68,9 @@ module SonicPiAkaiApcMini
       set "free_play_playing_#{message[:key]}", note_control
     end
 
-    def selector((row, col), values)
+    def selector(row, col, values)
       # TODO: selector is quite messy. It can use a refactor and proper reset/cleanup (like free_play's).
-      krange = Helpers.key_range([row, col], values.size)
+      krange = Helpers.key_range(row, col, values.size)
       set "selector_values_#{krange}", values.ring
       set "selector_current_value_#{krange}", 0 if get("selector_current_value_#{krange}").nil?
       krange.each.with_index do |key, i|

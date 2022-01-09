@@ -14,7 +14,7 @@ module SonicPiAkaiApcMini
       end
     end
 
-    def key_range((row, col), max_size)
+    def key_range(row, col, max_size)
       first = (row * 8) + col
       last = [(row * 8) + 7, first + max_size - 1].min
       (first..last)
