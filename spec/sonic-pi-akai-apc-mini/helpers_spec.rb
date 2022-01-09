@@ -9,13 +9,13 @@ RSpec.describe SonicPiAkaiApcMini::Helpers do
     end
 
     it 'supports arrays' do
-      expect(described_class.normalize(0, [:a, :b, :c])).to eq :a
-      expect(described_class.normalize(64, [:a, :b, :c])).to eq :b
-      expect(described_class.normalize(127, [:a, :b, :c])).to eq :c
+      expect(described_class.normalize(0, %i[a b c])).to eq :a
+      expect(described_class.normalize(64, %i[a b c])).to eq :b
+      expect(described_class.normalize(127, %i[a b c])).to eq :c
     end
 
     it 'supports special value :pan' do
-      expect(described_class.normalize(0, :pan)).to eq -1
+      expect(described_class.normalize(0, :pan)).to eq(-1)
       expect(described_class.normalize(64, :pan)).to be_within(0.1).of(0)
       expect(described_class.normalize(127, :pan)).to eq 1
     end

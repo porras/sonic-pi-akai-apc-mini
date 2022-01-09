@@ -30,5 +30,5 @@ Gem::Specification.new do |spec|
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
   spec.metadata['rubygems_mfa_required'] = 'true'
-  spec.post_install_message = "Remember to run sonic-pi-akai-apc-mini to get instructions on how to load the new version into Sonic Pi"
+  spec.post_install_message = 'Remember to run sonic-pi-akai-apc-mini to get instructions on how to load the new version into Sonic Pi'
 end

@@ -5,9 +5,9 @@ path_to_init = File.expand_path(File.join(__dir__, '..', 'init'))
 if ARGV.first == 'path'
   puts path_to_init
 else
-  puts <<RUBY
-# To load sonic-pi-akai-apc-mini into Sonic Pi, add the following to your
-# buffer, or ~/.sonic-pi/config/init.rb
-require '#{path_to_init}'
-RUBY
+  puts <<~RUBY
+    # To load sonic-pi-akai-apc-mini into Sonic Pi, add the following to your
+    # buffer, or ~/.sonic-pi/config/init.rb
+    require '#{path_to_init}'
+  RUBY
 end
