@@ -5,14 +5,18 @@ module SonicPiAkaiApcMini
       !!get("switch_#{n}")
     end
 
-    def fader(n, target = (0..1), _options = {})
+    # default `target` is 0-0.999 instead of 0.1 because many parameters have
+    # [0,1) as range and throw an error when passed 1 (e.g. tb303 synth's res).
+    # It's not the most common usecase, but for the common use case it makes no
+    # difference so I think it's a good default.
+    def fader(n, target = (0..0.999), _options = {})
       # TODO: Try to optimize speed, there is some latency because the
       # controller send a lot of events (too much granularity)
       value = get("fader_#{n}", 0)
       Helpers.normalize(value, target)
     end
 
-    def attach_fader(n, node, property, target = (0..1))
+    def attach_fader(n, node, property, target = (0..0.999))
       control node, property => fader(n, target)
       set "attached_fader_#{n}", node: node, property: property, target: target
     end

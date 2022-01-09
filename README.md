@@ -37,7 +37,7 @@ A small set of functions get added to the Sonic Pi API, in order to use the cont
 
 #### `fader(n, [target-values])`
 
-This function lets you use any of the faders to control the value of _anything_ in Sonic Pi. `n` is the fader number (they are 0-8, left to right). `target-values` is the range of values the fader will map to (and defaults to `(0..1)`). Some examples:
+This function lets you use any of the faders to control the value of _anything_ in Sonic Pi. `n` is the fader number (they are 0-8, left to right). `target-values` is the range of values the fader will map to (and defaults to `(0..1)`\*). Some examples:
 
 ```ruby
 play :c4, amp: fader(0)
@@ -63,6 +63,9 @@ Finally, it is possible to use the same fader for two different things, with two
 ```ruby
 play :c4, amp: fader(0, (0.8..1.5)), pan: fader(0, :pan)
 ```
+
+\*In reallity, `(0..0.999)`. The reason is that there are many parameters with range [0, 1), that is, between 0 and 1 but **not** 1, for example a synth's `res` (resonance). This weird default helps with this case while making no difference for the normal case. If you **really** need to be able to get to 1, then pass `(0..1)` explicitly.
+
 #### `attach_fader(n, node, property, [target-values])`
 
 All this is fine and good and works great with short synth notes or samples, but sometimes you want to control a sound with a fader _while it is playing_. That's what `attach_fader` is for. Apart from the already known `n` and `target-values`, which work the same, it expects a `node` (a synth node, a sample node, or a fx node) and a `property`, which will be attached to the fader and updated in real-time:
