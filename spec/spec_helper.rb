@@ -8,4 +8,9 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  config.before do
+    # bypass the mechanism that avoids hot-changing the model:
+    SonicPiAkaiApcMini::Controller.instance_variable_set(:@_model, nil)
+  end
 end

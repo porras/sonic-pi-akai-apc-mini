@@ -29,15 +29,20 @@ Sonic Pi ships with its own Ruby, meaning that in principle it has no access to 
 
 ## Usage
 
-First of all, call `initialize_akai` at the top of your buffer. That will make all the features available.
+First of all, call `initialize_akai(<model>)` at the top of your buffer. That will make all the features available.
 
 A small set of functions get added to the Sonic Pi API, in order to use the controls in the APC mini in different ways.
+
+### Supported models
+
+* `:apc_mini`
+* `:apc_key_25` (experimental; please contact the author if you use it, either successfully or not. in any case, only the grid and the knobs are supported, not the keyboard --yet)
 
 ### Faders
 
 #### `fader(n, [target-values])`
 
-This function lets you use any of the faders to control the value of _anything_ in Sonic Pi. `n` is the fader number (they are 0-8, left to right). `target-values` is the range of values the fader will map to (and defaults to `(0..1)`\*). Some examples:
+This function lets you use any of the faders to control the value of _anything_ in Sonic Pi. `n` is the fader number (starting from 0, left to right). `target-values` is the range of values the fader will map to (and defaults to `(0..1)`\*). Some examples:
 
 ```ruby
 play :c4, amp: fader(0)

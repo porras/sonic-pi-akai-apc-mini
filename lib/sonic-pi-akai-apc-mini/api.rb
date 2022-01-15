@@ -1,8 +1,7 @@
 module SonicPiAkaiApcMini
   module API
-    def switch?(line, col)
-      n = (line * 8) + col
-      !!get("switch_#{n}")
+    def switch?(row, col)
+      !!get("switch_#{Helpers.key(row, col)}")
     end
 
     # default `target` is 0-0.999 instead of 0.1 because many parameters have
@@ -11,7 +10,9 @@ module SonicPiAkaiApcMini
     # difference so I think it's a good default.
     def fader(n, target = (0..0.999), _options = {})
       # TODO: Try to optimize speed, there is some latency because the
-      # controller send a lot of events (too much granularity)
+      # controller send a lot of events (too much granularity). It is in theory
+      # possible to save some of it by `get`ting the value directly instead of
+      # waiting for all the events to be processed.
       value = get("fader_#{n}", 0)
       Helpers.normalize(value, target)
     end
@@ -22,42 +23,41 @@ module SonicPiAkaiApcMini
     end
 
     def loop_rows(duration, rows)
-      first_row = rows.keys.first
-      8.times do |beat|
+      first_row = rows.keys.max
+      Controller.model.grid_columns.times do |beat|
         prev = (beat - 1) % 8
-        midi_note_on (first_row * 8) + prev, get("switch_#{(first_row * 8) + prev}") ? 1 : 0
-        midi_note_on (first_row * 8) + beat, 5
+        prev_key = Helpers.key(first_row, prev)
+        beat_key = Helpers.key(first_row, beat)
+        midi_note_on prev_key, get("switch_#{prev_key}") ? Controller.model.light_green : Controller.model.light_off
+        midi_note_on beat_key, Controller.model.light_yellow
         rows.each do |row, sound|
-          in_thread(&sound) if get("switch_#{(row * 8) + beat}")
+          in_thread(&sound) if switch?(row, beat)
         end
-        sleep duration / 8.0
+        sleep duration.to_f / Controller.model.grid_columns
       end
     end
 
     def loop_rows_synth(duration, rows, notes, options = {})
-      8.times do |beat|
-        prev = (beat - 1) % 8
-        midi_note_on (rows.first * 8) + prev, get("switch_#{(rows.first * 8) + prev}") ? 1 : 0
-        midi_note_on (rows.first * 8) + beat, 5
-        rows.each.with_index do |row, index|
-          opts = options.respond_to?(:call) ? options.call : options
-          play(notes[index], opts) if get("switch_#{(row * 8) + beat}")
-        end
-        sleep duration / 8.0
-      end
+      rows = rows.map.with_index do |row, i|
+        [row, lambda do
+                opts = options.respond_to?(:call) ? options.call : options
+                play(notes[i], opts)
+              end]
+      end.to_h
+      loop_rows(duration, rows)
     end
 
     def reset_free_play(row, col, size)
       size = size.size unless size.is_a?(Integer) # so we can pass the same ring
       Helpers.key_range(row, col, size).each do |key|
-        midi_note_on key, 0
+        midi_note_on key, Controller.model.light_off
         set "free_play_#{key}", nil
       end
     end
 
     def free_play(row, col, notes, options = {})
       Helpers.key_range(row, col, notes.size).each.with_index do |key, i|
-        midi_note_on key, 5
+        midi_note_on key, Controller.model.light_yellow
         set "free_play_#{key}", notes[i]
       end
 
@@ -80,26 +80,31 @@ module SonicPiAkaiApcMini
       values[get("selector_current_value_#{krange}")]
     end
 
-    def initialize_akai
+    def initialize_akai(model)
+      Controller.model = model
       # This loop manages faders. Whenever they change, the new value is stored via set,
       # and the corresponding light is turned on/off.
       live_loop :faders do
         use_real_time
-        n, value = sync('/midi:apc_mini_apc_mini_midi_1_20_0:1/control_change')
-        set "fader_#{n - 48}", value
-        midi_note_on n - 48 + 64, value.zero? ? 0 : 1
-        if attachment = get("attached_fader_#{n - 48}")
+        n, value = sync(Controller.model.midi_event(:control_change))
+        set "fader_#{n - Controller.model.fader_offset}", value
+        if Controller.model.fader_light_offset
+          midi_note_on n + Controller.model.fader_light_offset,
+                       value.zero? ? Controller.model.light_off : Controller.model.light_red
+        end
+        if attachment = get("attached_fader_#{n - Controller.model.fader_offset}")
           normalized_value = Helpers.normalize(value, attachment[:target])
           control attachment[:node], attachment[:property] => normalized_value
         end
       end
 
-      # Manages the buttons in the grid, both as switches and to "free play". Whenever one is,
-      # pressed, we check if that row is being used to "free play". If it is, we play. If it's
-      # not, we manage it as a switch.
+      # Manages the buttons in the grid, both as switches, selectors, and to
+      # "free play". Whenever one is pressed, we check if that row is being used
+      # to "free play". If it is, we play. If it's not, we check if its used as
+      # a selector and manage it. Otherwise, we manage it as a switch.
       live_loop :switches_and_freeplay do
         use_real_time
-        n, _vel = sync('/midi:apc_mini_apc_mini_midi_1_20_0:1/note_on')
+        n, _vel = sync(Controller.model.midi_event(:note_on))
         if note = get("free_play_#{n}")
           cue :free_play, note: note, key: n
         elsif keys = get("selector_keys_#{n}")
@@ -117,7 +122,7 @@ module SonicPiAkaiApcMini
 
       live_loop :free_play_note_offs do
         use_real_time
-        n, _vel = sync('/midi:apc_mini_apc_mini_midi_1_20_0:1/note_off')
+        n, _vel = sync(Controller.model.midi_event(:note_off))
         if note_control = get("free_play_playing_#{n}")
           release = note_control.args['release'] || note_control.info.arg_defaults[:release]
           control note_control, amp: 0, amp_slide: release

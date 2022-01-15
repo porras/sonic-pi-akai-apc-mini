@@ -8,4 +8,8 @@ load "#{dir}/helpers.rb"
 load "#{dir}/api.rb"
 load "#{dir}/controller.rb"
 
+# bypass the mechanism that avoids hot-changing the model, forcing a reload of
+# the config on each call:
+SonicPiAkaiApcMini::Controller.instance_variable_set(:@_model, nil)
+
 include SonicPiAkaiApcMini::API

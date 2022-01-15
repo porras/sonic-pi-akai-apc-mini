@@ -1,4 +1,5 @@
 require 'sonic-pi-akai-apc-mini/helpers'
+require 'sonic-pi-akai-apc-mini/controller'
 
 RSpec.describe SonicPiAkaiApcMini::Helpers do
   describe '#normalize' do
@@ -22,20 +23,56 @@ RSpec.describe SonicPiAkaiApcMini::Helpers do
   end
 
   describe '#key_range' do
-    it 'returns the MIDI note for a button' do
-      expect(described_class.key_range(0, 0, 1)).to eq(0..0)
+    before do
+      SonicPiAkaiApcMini::Controller.model = model_name
     end
 
-    it 'returns the MIDI notes for three buttons' do
-      expect(described_class.key_range(0, 0, 3)).to eq(0..2)
+    context 'on the APC mini' do
+      let(:model_name) { :apc_mini }
+
+      it 'returns the MIDI note for a button' do
+        expect(described_class.key_range(0, 0, 1)).to eq(0..0)
+      end
+
+      it 'returns the MIDI notes for three buttons' do
+        expect(described_class.key_range(0, 0, 3)).to eq(0..2)
+      end
+
+      it 'calculates the right MIDI notes away from the origin' do
+        expect(described_class.key_range(2, 2, 3)).to eq(18..20)
+      end
+
+      it 'does not exceed the end of the row' do
+        expect(described_class.key_range(0, 6, 6)).to eq(6..7)
+      end
+
+      it 'errors out when trying to use a row higher than 7' do
+        expect(described_class.key_range(7, 0, 1)).to eq(56..56)
+        expect { described_class.key_range(8, 0, 1) }.to raise_error(described_class::RangeError)
+      end
+
+      it 'errors out when trying to use a column higher than 7' do
+        expect(described_class.key_range(0, 7, 1)).to eq(7..7)
+        expect { described_class.key_range(0, 8, 1) }.to raise_error(described_class::RangeError)
+      end
     end
 
-    it 'calculates the right MIDI notes away from the origin' do
-      expect(described_class.key_range(2, 2, 3)).to eq(18..20)
-    end
+    context 'on the APC Key 25' do
+      let(:model_name) { :apc_key_25 }
 
-    it 'does not exceed the end of the row' do
-      expect(described_class.key_range(0, 6, 6)).to eq(6..7)
+      it 'returns the MIDI note for a button' do
+        expect(described_class.key_range(0, 0, 1)).to eq(0..0)
+      end
+
+      it 'errors out when trying to use a row higher than 4' do
+        expect(described_class.key_range(4, 0, 1)).to eq(32..32)
+        expect { described_class.key_range(5, 0, 1) }.to raise_error(described_class::RangeError)
+      end
+
+      it 'errors out when trying to use a column higher than 7' do
+        expect(described_class.key_range(0, 7, 1)).to eq(7..7)
+        expect { described_class.key_range(0, 8, 1) }.to raise_error(described_class::RangeError)
+      end
     end
   end
 end
