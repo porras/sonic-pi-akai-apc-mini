@@ -20,4 +20,22 @@ RSpec.describe SonicPiAkaiApcMini::Helpers do
       expect(described_class.normalize(127, :pan)).to eq 1
     end
   end
+
+  describe '#key_range' do
+    it 'returns the MIDI note for a button' do
+      expect(described_class.key_range(0, 0, 1)).to eq(0..0)
+    end
+
+    it 'returns the MIDI notes for three buttons' do
+      expect(described_class.key_range(0, 0, 3)).to eq(0..2)
+    end
+
+    it 'calculates the right MIDI notes away from the origin' do
+      expect(described_class.key_range(2, 2, 3)).to eq(18..20)
+    end
+
+    it 'does not exceed the end of the row' do
+      expect(described_class.key_range(0, 6, 6)).to eq(6..7)
+    end
+  end
 end
