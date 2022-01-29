@@ -29,6 +29,8 @@ Sonic Pi ships with its own Ruby, meaning that in principle it has no access to 
 
 ## Usage
 
+If you want to skip this reference, feel free to load `example.rb` on Sonic Pi and start jamming. Otherwise:
+
 First of all, call `initialize_akai(<model>)` at the top of your buffer. That will make all the features available.
 
 A small set of functions get added to the Sonic Pi API, in order to use the controls in the APC mini in different ways.
