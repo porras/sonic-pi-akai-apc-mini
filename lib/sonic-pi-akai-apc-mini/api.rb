@@ -8,7 +8,9 @@ module SonicPiAkaiApcMini
     # [0,1) as range and throw an error when passed 1 (e.g. tb303 synth's res).
     # It's not the most common usecase, but for the common use case it makes no
     # difference so I think it's a good default.
-    def fader(n, target = (0..0.999), _options = {})
+    DEFAULT_TARGET = (0..0.999).freeze
+
+    def fader(n, target = DEFAULT_TARGET)
       # TODO: Try to optimize speed, there is some latency because the
       # controller send a lot of events (too much granularity). It is in theory
       # possible to save some of it by `get`ting the value directly instead of
@@ -17,9 +19,21 @@ module SonicPiAkaiApcMini
       Helpers.normalize(value, target)
     end
 
-    def attach_fader(n, node, property, target = (0..0.999))
-      control node, property => fader(n, target)
-      set "attached_fader_#{n}", node: node, property: property, target: target
+    def attach_fader(n, node, property, target = DEFAULT_TARGET)
+      set_fader(n, target) do |value|
+        control node, property => value
+      end
+    end
+
+    def set_fader(n, target = DEFAULT_TARGET, &block)
+      # first we just call the block with the current value, or 0
+      block.call(Helpers.normalize(get("fader_#{n}", 0), target))
+      # and set a loop that will cal it again on every change
+      live_loop "global_fader_#{n}" do
+        use_real_time
+        value = sync("fader_#{n}")
+        block.call(Helpers.normalize(value, target))
+      end
     end
 
     def loop_rows(duration, rows)
@@ -86,15 +100,13 @@ module SonicPiAkaiApcMini
       # and the corresponding light is turned on/off.
       live_loop :faders do
         use_real_time
-        n, value = sync(Controller.model.midi_event(:control_change))
-        set "fader_#{n - Controller.model.fader_offset}", value
+        note_number, value = sync(Controller.model.midi_event(:control_change))
+        fader_number = note_number - Controller.model.fader_offset
+        set "fader_#{fader_number}", value
         if Controller.model.fader_light_offset
-          midi_note_on n + Controller.model.fader_light_offset,
+          light_note_number = note_number + Controller.model.fader_light_offset
+          midi_note_on light_note_number,
                        value.zero? ? Controller.model.light_off : Controller.model.light_red
-        end
-        if attachment = get("attached_fader_#{n - Controller.model.fader_offset}")
-          normalized_value = Helpers.normalize(value, attachment[:target])
-          control attachment[:node], attachment[:property] => normalized_value
         end
       end
 

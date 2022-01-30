@@ -71,7 +71,7 @@ Finally, it is possible to use the same fader for two different things, with two
 play :c4, amp: fader(0, (0.8..1.5)), pan: fader(0, :pan)
 ```
 
-\*In reallity, `(0..0.999)`. The reason is that there are many parameters with range [0, 1), that is, between 0 and 1 but **not** 1, for example a synth's `res` (resonance). This weird default helps with this case while making no difference for the normal case. If you **really** need to be able to get to 1, then pass `(0..1)` explicitly.
+\*In reality, `(0..0.999)`. The reason is that there are many parameters with range [0, 1), that is, between 0 and 1 but **not** 1, for example a synth's `res` (resonance). This weird default helps with this case while making no difference for the normal case. If you **really** need to be able to get to 1, then pass `(0..1)` explicitly.
 
 #### `attach_fader(n, node, property, [target-values])`
 
@@ -94,19 +94,27 @@ live_loop :drums do
 end
 ```
 
-In this case, at the moment it is not possible to attach the same fader to two different controls. But you can combine **one** `attach_fader` with as many `fader` as you want.
-
 `attach_fader` uses `control` under the hood, which means:
 
 * The property needs to be one that can be changed while the sound is playing. Refer to the documentation of each synth and fx.
 * It will be affected by the corresponding `_slide` options. It could be said that _it doesn't play very well with any non-zero value in the corresponding `_slide` option_, but in reality pretty cool effects can be created by mixing them.
 
-#### Important note about faders
+#### `set_fader(n, [target-values]) { |value| ... }`
 
-Because MIDI works with events, it is not possible for Sonic Pi to know the initial position of a fader until it is moved and its new value is sent. Until then, it is assumed it is set to zero. So, two little advices:
+There is another variant, lower level, which can be used for anything, but the most typical use case is to connect the fader to some general option like `set_volume!` or `set_mixer_control!`.
+
+```
+set_fader(8) { |v| set_volume! v }
+```
+
+#### Important notes about faders
+
+1. Because MIDI works with events, it is not possible for Sonic Pi to know the initial position of a fader until it is moved and its new value is sent. Until then, it is assumed it is set to zero. So, two little advices:
 
 * Start your performances with the faders physically set to zero, to match that assumption. Move them to the desired position _before_ evaluating the code that will read them.
 * The lights above the faders are used as a hint to avoid this problem: they will be off when Sonic Pi _thinks_ they're set at zero, and on when it _thinks_ they're set at non-zero. If you see a fader physically not at zero but with the light off, move it slightly, so that Sonic Pi learns where it is :)
+
+2. At the moment it is not possible to apply `attach_fader`/`set_fader` to the same fader twice (the second definition _wins_). But you can combine **one** `attach_fader`/`set_fader` with as many `fader` as you want.
 
 ### Switches
 
@@ -224,9 +232,7 @@ If you want to remove a free play mapping (so that the buttons are again availab
 
 * A `selector` that actually works
 * Free play with samples
-* Improvements to `attach_fader` so that a couple of things that are currently not possible, are:
-  * Using it to control the mixer (`set_mixer_control!`, etc.)
-  * Attaching the same fader to different nodes, or different properties of the same node
+* Make it possible to attach/set the same fader more than once
 * Better performance and stability in general
 
 ## Contributing
