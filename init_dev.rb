@@ -1,5 +1,5 @@
-# Script to be used in development. Instead of `require '.../init.rb'` from
-# sonic pi, `load '.../init_dev.rb'` and code will be reloaded on each Alt+R.
+# Script to be used in development. Instead of `require '.../init'` from
+# SonicPi, `load '.../init_dev.rb'` and code will be reloaded on each Alt+R.
 
 dir = File.join(__dir__, 'lib', 'sonic-pi-akai-apc-mini')
 
