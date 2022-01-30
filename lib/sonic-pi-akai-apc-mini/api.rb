@@ -144,5 +144,3 @@ module SonicPiAkaiApcMini
     end
   end
 end
-
-include SonicPiAkaiApcMini::API
