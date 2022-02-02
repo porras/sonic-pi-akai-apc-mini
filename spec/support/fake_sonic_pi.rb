@@ -1,3 +1,5 @@
+require 'fiber' # for Ruby < 3.0
+
 class FakeSonicPi
   class SleepForever < StandardError; end
   class NoSleep < StandardError; end
