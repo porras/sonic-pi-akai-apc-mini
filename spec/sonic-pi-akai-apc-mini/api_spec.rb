@@ -21,23 +21,39 @@ RSpec.describe SonicPiAkaiApcMini::API do
     expect(sp).to have_output(:play, :c2).at(0, 1)
   end
 
-  example 'direct use of fader' do
-    sp = FakeSonicPi.new do
-      initialize_akai(:apc_mini)
+  describe 'faders' do
+    example 'direct use through #fader method' do
+      sp = FakeSonicPi.new do
+        initialize_akai(:apc_mini)
 
-      live_loop :drum do
-        sample :bd_haus, amp: fader(0)
-        sleep 1
+        live_loop :drum do
+          sample :bd_haus, amp: fader(0)
+          sleep 1
+        end
       end
+
+      sp.run(2, events: {
+               0.5 => { name: '/midi:apc_mini*/control_change', value: [48, 64] },
+               1.5 => { name: '/midi:apc_mini*/control_change', value: [48, 127] }
+             })
+
+      expect(sp).to have_output(:sample, :bd_haus, amp: 0).at(0)
+      expect(sp).to have_output(:sample, :bd_haus, amp: be_within(0.05).of(0.5)).at(1)
+      expect(sp).to have_output(:sample, :bd_haus, amp: be_within(0.05).of(1)).at(2)
     end
 
-    sp.run(2, events: {
-             0.5 => { name: '/midi:apc_mini*/control_change', value: [48, 64] },
-             1.5 => { name: '/midi:apc_mini*/control_change', value: [48, 127] }
-           })
+    example 'moving faders turns lights on and off' do
+      sp = FakeSonicPi.new do
+        initialize_akai(:apc_mini)
+      end
 
-    expect(sp).to have_output(:sample, :bd_haus, amp: 0).at(0)
-    expect(sp).to have_output(:sample, :bd_haus, amp: be_within(0.05).of(0.5)).at(1)
-    expect(sp).to have_output(:sample, :bd_haus, amp: be_within(0.05).of(1)).at(2)
+      sp.run(2, events: {
+               0.5 => { name: '/midi:apc_mini*/control_change', value: [48, 64] },
+               1.5 => { name: '/midi:apc_mini*/control_change', value: [48, 0] }
+             })
+
+      expect(sp).to have_output(:midi_note_on, 64, 3).at(0.5)
+      expect(sp).to have_output(:midi_note_on, 64, 0).at(1.5)
+    end
   end
 end
