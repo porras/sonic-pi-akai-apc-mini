@@ -32,10 +32,10 @@ RSpec.describe SonicPiAkaiApcMini::API do
         end
       end
 
-      sp.run(2, events: {
-               0.5 => { name: '/midi:apc_mini*/control_change', value: [48, 64] },
-               1.5 => { name: '/midi:apc_mini*/control_change', value: [48, 127] }
-             })
+      sp.run(2, events: [
+               [0.5, '/midi:apc_mini*/control_change', [48, 64]],
+               [1.5, '/midi:apc_mini*/control_change', [48, 128]]
+             ])
 
       expect(sp).to have_output(:sample, :bd_haus, amp: 0).at(0)
       expect(sp).to have_output(:sample, :bd_haus, amp: be_within(0.05).of(0.5)).at(1)
@@ -47,13 +47,29 @@ RSpec.describe SonicPiAkaiApcMini::API do
         initialize_akai(:apc_mini)
       end
 
-      sp.run(2, events: {
-               0.5 => { name: '/midi:apc_mini*/control_change', value: [48, 64] },
-               1.5 => { name: '/midi:apc_mini*/control_change', value: [48, 0] }
-             })
+      sp.run(2, events: [
+               [0.5, '/midi:apc_mini*/control_change', [48, 64]],
+               [1.5, '/midi:apc_mini*/control_change', [48, 0]]
+             ])
 
       expect(sp).to have_output(:midi_note_on, 64, 3).at(0.5)
       expect(sp).to have_output(:midi_note_on, 64, 0).at(1.5)
+    end
+
+    example 'using set_fader to control volume' do
+      sp = FakeSonicPi.new do
+        initialize_akai(:apc_mini)
+        set_fader(8, 0..2) { |v| set_volume! v }
+      end
+
+      sp.run(2, events: [
+               [0.5, '/midi:apc_mini*/control_change', [56, 64]],
+               [1.5, '/midi:apc_mini*/control_change', [56, 127]]
+             ])
+
+      expect(sp).to have_output(:set_volume!, be_within(0.05).of(0)).at(0)
+      expect(sp).to have_output(:set_volume!, be_within(0.05).of(1)).at(0.5)
+      expect(sp).to have_output(:set_volume!, be_within(0.05).of(2)).at(1.5)
     end
   end
 end

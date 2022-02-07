@@ -1,7 +1,7 @@
 require 'fiber' # for Ruby < 3.0
+require 'support/events'
 
 class FakeSonicPi
-  class SleepForever < StandardError; end
   class NoSleep < StandardError; end
 
   include SonicPiAkaiApcMini::API
@@ -14,29 +14,49 @@ class FakeSonicPi
   end
 
   # MAGIC :D I mean Fibers ;)
-  def run(beats, events: {})
-    @events = events
+  def run(beats, events: [])
+    @events = Events.new(events)
+    @beat = 0.0
     instance_eval(&@definition)
     fibers = live_loops.to_h do |name, block|
       f = Fiber.new do
-        Thread.current[:beat] = 0.0
-        until Thread.current[:beat] > beats
-          before = Thread.current[:beat]
+        until @beat > beats
+          Thread.current[:slept] = false
           instance_eval(&block)
-          raise NoSleep, "live_loop #{name} didn't sleep" if Thread.current[:beat] == before
+          raise NoSleep, "live_loop #{name} didn't sleep" unless Thread.current[:slept]
         end
-      rescue SleepForever
-        # nothing, let the fiber die
       end
       [f, 0.0]
     end
     loop do
-      next_fiber, _b = fibers.select { |f, _b| f.alive? }.min_by { |_f, beat| beat }
-      break unless next_fiber
+      alive_fibers = fibers.select { |f, _b| f.alive? }
+      waiting_fibers, scheduled_fibers = alive_fibers.partition { |_f, b| b.nil? }
 
-      fibers[next_fiber] = next_fiber.resume
+      # give all waiting fibers a chance
+      events_before = @events.dup
+      waiting_fibers.each do |f, _b|
+        fibers[f] = f.resume
+      end
+      # if any of them added an event, do it again
+      next if events_before != @events
+
+      # find next scheduled fiber (and for when is it scheduled?)
+      next_fiber, next_beat = scheduled_fibers.min_by { |_f, beat| beat }
+
+      # is there any event to happen before next_beat? if so, process that before
+      next_beat_with_event = @events.next_beat(@beat)
+      if next_beat_with_event && (next_beat.nil? || next_beat_with_event < next_beat)
+        @beat = next_beat_with_event
+        next
+        # otherwise proceed with the next scheduled fiber
+      elsif next_fiber
+        @beat = next_beat
+        fibers[next_fiber] = next_fiber.resume
+        # and if there is none, then we're done \o/
+      else
+        break
+      end
     end
-    output
   end
 
   def live_loop(name, &block)
@@ -49,42 +69,41 @@ class FakeSonicPi
 
   # sleep the fast way ;)
   def sleep(n)
-    Fiber.yield Thread.current[:beat] += n
+    Thread.current[:slept] = true
+    Fiber.yield @beat + n
   end
 
   def sync(event_name)
-    # find closest future event (if any)
-    beat, event = @events.select do |beat, event|
-                    beat > Thread.current[:beat] && event[:name] == event_name
-                  end.min_by { |beat, _e| beat }
-    if beat
-      # "sleep" until then
-      Fiber.yield Thread.current[:beat] = beat
-      # return it when we're back
-      event[:value]
-    else
-      raise SleepForever
+    loop do
+      Thread.current[:slept] = true
+      # find event in current beat and return its value, otherwise let the other
+      # fibers progress, then try again
+      if event = @events.find(@beat, event_name)
+        event.processed = true
+        return event.value
+      else
+        Fiber.yield nil
+      end
     end
   end
 
   def get(name, default = nil)
-    # find most recent past event (if any)
-    _b, event = @events.select do |beat, event|
-                  beat <= Thread.current[:beat] && event[:name] == name
-                end.max_by { |beat, _e| beat }
-    (event && event[:value]) || default
+    if event = @events.most_recent(@beat, name)
+      event.value
+    else
+      default
+    end
   end
 
   def set(name, value)
-    # TODO: this should be an array (multiple events in same beat)
-    @events[Thread.current[:beat]] = { name: name, value: value }
+    @events.add(@beat, name, value)
   end
 
   # commands we store as output
-  %i[play sample midi_note_on].each do |cmd|
+  %i[play sample midi_note_on set_volume!].each do |cmd|
     define_method(cmd) do |*args|
-      @output[Thread.current[:beat]] ||= []
-      @output[Thread.current[:beat]] << [cmd, *args]
+      @output[@beat] ||= []
+      @output[@beat] << [cmd, *args]
     end
   end
 
