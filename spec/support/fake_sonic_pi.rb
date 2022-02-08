@@ -17,25 +17,16 @@ class FakeSonicPi
   def run(beats, events: [])
     @events = Events.new(events)
     @beat = 0.0
+    @fibers = {}
     instance_eval(&@definition)
-    fibers = live_loops.to_h do |name, block|
-      f = Fiber.new do
-        until @beat > beats
-          Thread.current[:slept] = false
-          instance_eval(&block)
-          raise NoSleep, "live_loop #{name} didn't sleep" unless Thread.current[:slept]
-        end
-      end
-      [f, 0.0]
-    end
     loop do
-      alive_fibers = fibers.select { |f, _b| f.alive? }
-      waiting_fibers, scheduled_fibers = alive_fibers.partition { |_f, b| b.nil? }
+      waiting_fibers, scheduled_fibers = @fibers.partition { |_f, b| b.nil? }
+      scheduled_fibers.reject! { |_f, b| b > beats }
 
       # give all waiting fibers a chance
       events_before = @events.dup
       waiting_fibers.each do |f, _b|
-        fibers[f] = f.resume
+        @fibers[f] = f.resume
       end
       # if any of them added an event, do it again
       next if events_before != @events
@@ -51,7 +42,7 @@ class FakeSonicPi
         # otherwise proceed with the next scheduled fiber
       elsif next_fiber
         @beat = next_beat
-        fibers[next_fiber] = next_fiber.resume
+        @fibers[next_fiber] = next_fiber.resume
         # and if there is none, then we're done \o/
       else
         break
@@ -60,11 +51,14 @@ class FakeSonicPi
   end
 
   def live_loop(name, &block)
-    live_loops[name] = block
-  end
-
-  def live_loops
-    @_live_loops ||= {}
+    f = Fiber.new do
+      loop do
+        Thread.current[:slept] = false
+        instance_eval(&block)
+        raise NoSleep, "live_loop #{name} didn't sleep" unless Thread.current[:slept]
+      end
+    end
+    @fibers[f] = @beat
   end
 
   # sleep the fast way ;)
@@ -99,13 +93,16 @@ class FakeSonicPi
     @events.add(@beat, name, value)
   end
 
-  # commands we store as output
-  %i[play sample midi_note_on set_volume!].each do |cmd|
-    define_method(cmd) do |*args|
+  # commands we store as output, returning a (fake) node
+  %i[play sample control midi_note_on set_volume!].each do |command|
+    define_method(command) do |*args|
       @output[@beat] ||= []
-      @output[@beat] << [cmd, *args]
+      @output[@beat] << [command, *args]
+      Node.new(command, args)
     end
   end
+
+  Node = Struct.new(:command, :args)
 
   # no-ops (sonic pi commands whose effect is not relevant here, but need to be
   # implemented so that the test doesn't fail)

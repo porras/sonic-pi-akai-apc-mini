@@ -1,7 +1,7 @@
 require 'pry'
 require 'sonic-pi-akai-apc-mini'
 require 'support/fake_sonic_pi'
-require 'support/matchers/sonic_pi_have_output'
+require 'support/matchers'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

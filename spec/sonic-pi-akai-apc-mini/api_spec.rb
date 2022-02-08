@@ -71,5 +71,32 @@ RSpec.describe SonicPiAkaiApcMini::API do
       expect(sp).to have_output(:set_volume!, be_within(0.05).of(1)).at(0.5)
       expect(sp).to have_output(:set_volume!, be_within(0.05).of(2)).at(1.5)
     end
+
+    example 'using attach_fader to control a synth' do
+      sp = FakeSonicPi.new do
+        initialize_akai(:apc_mini)
+
+        live_loop :synth do
+          node = play(:c4, cutoff: fader(0, 60..120))
+          attach_fader 0, node, :cutoff, 60..120
+          sleep 1
+        end
+      end
+
+      sp.run(2, events: [
+               [0.25, '/midi:apc_mini*/control_change', [48, 64]],
+               [1.25, '/midi:apc_mini*/control_change', [48, 127]]
+             ])
+
+      expect(sp).to have_output(:play, :c4, cutoff: be_within(0.5).of(60)).at(0)
+      expect(sp).to have_output(:control, a_node(:play, :c4), cutoff: be_within(0.5).of(60)).at(0)
+
+      expect(sp).to have_output(:control, a_node(:play, :c4), cutoff: be_within(0.5).of(90)).at(0.25)
+
+      expect(sp).to have_output(:play, :c4, cutoff: be_within(0.5).of(90)).at(1)
+      expect(sp).to have_output(:control, a_node(:play, :c4), cutoff: be_within(0.5).of(90)).at(1)
+
+      expect(sp).to have_output(:control, a_node(:play, :c4), cutoff: be_within(0.5).of(120)).at(1.25)
+    end
   end
 end
