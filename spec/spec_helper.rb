@@ -1,3 +1,7 @@
+require 'simplecov'
+SimpleCov.start do
+  add_filter 'spec/'
+end
 require 'byebug'
 require 'sonic-pi-akai-apc-mini'
 require 'support/fake_sonic_pi'
