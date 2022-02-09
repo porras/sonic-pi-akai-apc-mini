@@ -10,14 +10,15 @@ class FakeSonicPi
 
   def initialize(&definition)
     @definition = definition
-    @output = {}
+    @output = Events.new
+    @events = Events.new
+    @beat = 0.0
+    @fibers = {}
   end
 
   # MAGIC :D I mean Fibers ;)
   def run(beats, events: [])
-    @events = Events.new(events)
-    @beat = 0.0
-    @fibers = {}
+    @events.add_batch(events)
     instance_eval(&@definition)
     loop do
       waiting_fibers, scheduled_fibers = @fibers.partition { |_f, b| b.nil? }
@@ -96,8 +97,7 @@ class FakeSonicPi
   # commands we store as output, returning a (fake) node
   %i[play sample control midi_note_on set_volume!].each do |command|
     define_method(command) do |*args|
-      @output[@beat] ||= []
-      @output[@beat] << [command, *args]
+      @output.add @beat, command, args
       Node.new(command, args)
     end
   end

@@ -5,11 +5,8 @@ class Events
     end
   end
 
-  def initialize(events)
+  def initialize
     @events = []
-    events.each do |beat, name, value|
-      add(beat, name, value)
-    end
   end
 
   def most_recent(beat, name)
@@ -24,15 +21,19 @@ class Events
     @events.find { |b, e| b == beat && e.name == name && !e.processed }&.last
   end
 
+  def add_batch(events)
+    events.each { |b, n, v| add b, n, v }
+  end
+
   def add(beat, name, value)
     @events << [beat, Event.new(name, value)]
   end
 
   def ==(other)
-    hash == other.hash
+    other.is_a?(self.class) && @events == other.events
   end
 
-  def hash
-    @events.hash
-  end
+  protected
+
+  attr_reader :events
 end

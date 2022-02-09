@@ -1,7 +1,8 @@
-RSpec::Matchers.define :have_output do |*command|
+RSpec::Matchers.define :have_output do |command, *args|
   match do |sp|
-    beat_outputs = sp.output.values_at(*@beats)
-    expect(beat_outputs).to all(include(match(command)))
+    commands = @beats.map { |beat| sp.output.find(beat, command) }
+    expect(commands).to_not include(nil)
+    expect(commands.map(&:value)).to all(match(args))
   end
 
   chain :at do |*beats|

@@ -1,4 +1,4 @@
-require 'pry'
+require 'byebug'
 require 'sonic-pi-akai-apc-mini'
 require 'support/fake_sonic_pi'
 require 'support/matchers'
