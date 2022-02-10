@@ -36,6 +36,15 @@ module SonicPiAkaiApcMini
       end
     end
 
+    def set_trigger(row, col, &block)
+      note_number = Helpers.key(row, col)
+      live_loop "global_trigger_#{note_number}" do
+        use_real_time
+        _v = sync("note_on_#{note_number}")
+        block.call
+      end
+    end
+
     def loop_rows(duration, rows)
       first_row = rows.keys.max
       Controller.model.grid_columns.times do |beat|
@@ -108,6 +117,12 @@ module SonicPiAkaiApcMini
           midi_note_on light_note_number,
                        value.zero? ? Controller.model.light_off : Controller.model.light_red
         end
+      end
+
+      live_loop :_note_on do
+        use_real_time
+        note_number, value = sync(Controller.model.midi_event(:note_on))
+        cue "note_on_#{note_number}", value
       end
 
       # Manages the buttons in the grid, both as switches, selectors, and to

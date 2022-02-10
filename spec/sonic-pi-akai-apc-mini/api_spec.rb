@@ -99,4 +99,27 @@ RSpec.describe SonicPiAkaiApcMini::API do
       expect(sp).to have_output(:control, a_node(:play, :c4), cutoff: be_within(0.5).of(120)).at(1.25)
     end
   end
+
+  describe 'triggers' do
+    example 'simple trigger' do
+      sp = FakeSonicPi.new do
+        initialize_akai(:apc_mini)
+
+        set_trigger(0, 0) { sample :bd_haus }
+        set_trigger(0, 1) { sample :bd_ada }
+      end
+
+      sp.run(2, events: [
+        [0.30, '/midi:apc_mini*/note_on', [0, 127]],
+        [0.35, '/midi:apc_mini*/note_off', [0, 127]],
+        [1.30, '/midi:apc_mini*/note_on', [0, 127]],
+        [1.35, '/midi:apc_mini*/note_off', [0, 127]],
+        [1.40, '/midi:apc_mini*/note_on', [1, 127]],
+        [1.45, '/midi:apc_mini*/note_off', [1, 127]]
+      ])
+
+      expect(sp).to have_output(:sample, :bd_haus).at(0.3, 1.3)
+      expect(sp).to have_output(:sample, :bd_ada).at(1.4)
+    end
+  end
 end

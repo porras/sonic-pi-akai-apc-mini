@@ -94,6 +94,8 @@ class FakeSonicPi
     @events.add(@beat, name, value)
   end
 
+  alias_method :cue, :set
+
   # commands we store as output, returning a (fake) node
   %i[play sample control midi_note_on set_volume!].each do |command|
     define_method(command) do |*args|
