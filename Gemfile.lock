@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sonic-pi-akai-apc-mini (0.2.0)
+    sonic-pi-akai-apc-mini (0.3.0)
 
 GEM
   remote: https://rubygems.org/
