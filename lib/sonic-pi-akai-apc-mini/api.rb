@@ -36,12 +36,21 @@ module SonicPiAkaiApcMini
       end
     end
 
-    def set_trigger(row, col, &block)
+    def set_trigger(row, col, release: nil, &block)
       note_number = Helpers.key(row, col)
+      set "reserved_#{note_number}", true
+      midi_note_on note_number, Controller.model.light_yellow
       live_loop "global_trigger_#{note_number}" do
         use_real_time
         _v = sync("note_on_#{note_number}")
-        block.call
+        with_fx :level, amp: 1 do |fx|
+          node = block.call
+          if release
+            sync("note_off_#{note_number}")
+            control fx, amp_slide: release, amp: 0
+            at(release * 1.1) { node.kill }
+          end
+        end
       end
     end
 
@@ -125,6 +134,12 @@ module SonicPiAkaiApcMini
         cue "note_on_#{note_number}", value
       end
 
+      live_loop :_note_off do
+        use_real_time
+        note_number, value = sync(Controller.model.midi_event(:note_off))
+        cue "note_off_#{note_number}", value
+      end
+
       # Manages the buttons in the grid, both as switches, selectors, and to
       # "free play". Whenever one is pressed, we check if that row is being used
       # to "free play". If it is, we play. If it's not, we check if its used as
@@ -132,6 +147,8 @@ module SonicPiAkaiApcMini
       live_loop :switches_and_freeplay do
         use_real_time
         n, _vel = sync(Controller.model.midi_event(:note_on))
+        next if get("reserved_#{n}")
+
         if note = get("free_play_#{n}")
           cue :free_play, note: note, key: n
         elsif keys = get("selector_keys_#{n}")

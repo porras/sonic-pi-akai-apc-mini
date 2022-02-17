@@ -94,7 +94,7 @@ class FakeSonicPi
     @events.add(@beat, name, value)
   end
 
-  alias_method :cue, :set
+  alias cue set
 
   # commands we store as output, returning a (fake) node
   %i[play sample control midi_note_on set_volume!].each do |command|
@@ -104,11 +104,15 @@ class FakeSonicPi
     end
   end
 
+  def with_fx(*args, &block)
+    block.call(Node.new(:fx, args))
+  end
+
   Node = Struct.new(:command, :args)
 
   # no-ops (sonic pi commands whose effect is not relevant here, but need to be
   # implemented so that the test doesn't fail)
-  [:use_real_time].each do |cmd|
+  %i[use_real_time at].each do |cmd|
     define_method(cmd) { |*_args| }
   end
 end

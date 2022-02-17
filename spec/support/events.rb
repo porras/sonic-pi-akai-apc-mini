@@ -1,4 +1,6 @@
 class Events
+  attr_reader :events
+
   Event = Struct.new(:name, :value, :processed) do
     def initialize(name, value)
       super(name, value, false)
@@ -32,8 +34,4 @@ class Events
   def ==(other)
     other.is_a?(self.class) && @events == other.events
   end
-
-  protected
-
-  attr_reader :events
 end
