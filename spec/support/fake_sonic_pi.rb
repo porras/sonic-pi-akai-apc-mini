@@ -97,7 +97,7 @@ class FakeSonicPi
   alias cue set
 
   # commands we store as output, returning a (fake) node
-  %i[play sample control midi_note_on set_volume!].each do |command|
+  %i[play sample synth control midi_note_on set_volume!].each do |command|
     define_method(command) do |*args|
       @output.add @beat, command, args
       Node.new(command, args)

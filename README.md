@@ -242,15 +242,12 @@ Something to note, is that there is no problem to run more than one loop, with d
 
 The APC mini is a MIDI device, so you can... play! Be aware that this is of limited usefulness for several reasons (1. there is some latency that is ok for faders and such but makes playing quite difficult, and 2. it is not a keyboard, which makes it _even_ more difficult), but it can be ok for very simple things.
 
-#### `free_play(row, col, notes, [options])`
+#### `free_play(row, col, synth, notes, [options])`
 
-Assigns a series of consecutive buttons starting at `row`, `col`, to play `notes` with the current synth (and the given `options`, if any). The mapped buttons with light yellow. This call should live in its own `live_loop`.
+Assigns a series of consecutive buttons starting at `row`, `col`, to play `notes` with the specified `synth` (and the given `options`, if any). The mapped buttons with light yellow.
 
 ```ruby
-live_loop :bass do
-  use_synth :fm
-  free_play 0, 0, scale(:c3, :major), amp: 0.8
-end
+free_play 0, 0, :fm, scale(:c3, :major), amp: 0.8
 ```
 
 #### `reset_free_play(row, col, notes, [options])`

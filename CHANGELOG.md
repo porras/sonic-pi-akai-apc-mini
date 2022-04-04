@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reversed ranges (they already worked but that was an undocumented feature, now
   it's part of the API)
 
+### Changed
+
+- After a refactor, the behavior and signature of `free_play` changed. See README.md
+
 ## [0.3.0] - 2022-02-10
 
 ### Added 

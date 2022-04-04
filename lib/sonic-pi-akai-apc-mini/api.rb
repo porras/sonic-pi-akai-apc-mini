@@ -54,6 +54,17 @@ module SonicPiAkaiApcMini
       end
     end
 
+    def free_play(row, first_col, synth_name, notes, options = {})
+      return if notes.empty?
+      # consider only as many notes as they fit before the end of the row
+      last_col = [Controller.model.grid_columns - 1, first_col + notes.size - 1].min
+      (first_col..last_col).each.with_index do |col, i| 
+        set_trigger(row, col, release: options[:release] || 1) do
+          synth synth_name, { note: notes[i], sustain: 9999 }.merge(options.except(:release))
+        end
+      end
+    end
+
     def loop_rows(duration, rows)
       first_row = rows.keys.max
       Controller.model.grid_columns.times do |beat|
@@ -79,29 +90,8 @@ module SonicPiAkaiApcMini
       loop_rows(duration, rows)
     end
 
-    def reset_free_play(row, col, size)
-      size = size.size unless size.is_a?(Integer) # so we can pass the same ring
-      Helpers.key_range(row, col, size).each do |key|
-        midi_note_on key, Controller.model.light_off
-        set "free_play_#{key}", nil
-      end
-    end
-
-    def free_play(row, col, notes, options = {})
-      Helpers.key_range(row, col, notes.size).each.with_index do |key, i|
-        midi_note_on key, Controller.model.light_yellow
-        set "free_play_#{key}", notes[i]
-      end
-
-      use_real_time
-
-      message = sync(:free_play)
-      note_control = play message[:note], { sustain: 9999 }.merge(options)
-      set "free_play_playing_#{message[:key]}", note_control
-    end
-
     def selector(row, col, values)
-      # TODO: selector is quite messy. It can use a refactor and proper reset/cleanup (like free_play's).
+      # TODO: selector is quite messy. It can use a refactor and proper reset/cleanup.
       krange = Helpers.key_range(row, col, values.size)
       set "selector_values_#{krange}", values.ring
       set "selector_current_value_#{krange}", 0 if get("selector_current_value_#{krange}").nil?
@@ -140,18 +130,17 @@ module SonicPiAkaiApcMini
         cue "note_off_#{note_number}", value
       end
 
-      # Manages the buttons in the grid, both as switches, selectors, and to
-      # "free play". Whenever one is pressed, we check if that row is being used
-      # to "free play". If it is, we play. If it's not, we check if its used as
-      # a selector and manage it. Otherwise, we manage it as a switch.
-      live_loop :switches_and_freeplay do
+      # Manages the buttons in the grid, both as switches and selectors.
+      # Whenever one is pressed, we check if it is "reserved" (for triggers or
+      # free play). If it is, we ignore it (it has its own loop handling it). If
+      # it's not, we check if its used as a selector and manage it. Otherwise,
+      # we manage it as a switch.
+      live_loop :switches_and_selectors do
         use_real_time
         n, _vel = sync(Controller.model.midi_event(:note_on))
         next if get("reserved_#{n}")
 
-        if note = get("free_play_#{n}")
-          cue :free_play, note: note, key: n
-        elsif keys = get("selector_keys_#{n}")
+        if keys = get("selector_keys_#{n}")
           keys.each do |k|
             midi_note_on k, 3
           end
@@ -161,16 +150,6 @@ module SonicPiAkaiApcMini
           new_value = !get("switch_#{n}", false)
           set "switch_#{n}", new_value
           midi_note_on n, (new_value ? 1 : 0)
-        end
-      end
-
-      live_loop :free_play_note_offs do
-        use_real_time
-        n, _vel = sync(Controller.model.midi_event(:note_off))
-        if note_control = get("free_play_playing_#{n}")
-          release = note_control.args['release'] || note_control.info.arg_defaults[:release]
-          control note_control, amp: 0, amp_slide: release
-          at(release) { note_control.kill }
         end
       end
     end
