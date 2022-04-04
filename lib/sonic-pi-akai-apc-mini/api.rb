@@ -54,6 +54,14 @@ module SonicPiAkaiApcMini
       end
     end
 
+    # Same signature as `set_trigger` for convenience
+    def reset_trigger(row, col, *_)
+      note_number = Helpers.key(row, col)
+      set "reserved_#{note_number}", false
+      midi_note_on note_number, (switch?(row, col) ? Controller.model.light_green : Controller.model.light_off)
+      live_loop("global_trigger_#{note_number}") { stop }
+    end
+
     def free_play(row, first_col, synth_name, notes, options = {})
       return if notes.empty?
       # consider only as many notes as they fit before the end of the row
@@ -62,6 +70,16 @@ module SonicPiAkaiApcMini
         set_trigger(row, col, release: options[:release] || 1) do
           synth synth_name, { note: notes[i], sustain: 9999 }.merge(options.except(:release))
         end
+      end
+    end
+
+    # Same signature as `free_play` for convenience
+    def reset_free_play(row, first_col, _, notes, *_)
+      return if notes.empty?
+      # consider only as many notes as they fit before the end of the row
+      last_col = [Controller.model.grid_columns - 1, first_col + notes.size - 1].min
+      (first_col..last_col).each do |col| 
+        reset_trigger(row, col)
       end
     end
 
@@ -149,7 +167,7 @@ module SonicPiAkaiApcMini
         else
           new_value = !get("switch_#{n}", false)
           set "switch_#{n}", new_value
-          midi_note_on n, (new_value ? 1 : 0)
+          midi_note_on n, (new_value ? Controller.model.light_green : Controller.model.light_off)
         end
       end
     end

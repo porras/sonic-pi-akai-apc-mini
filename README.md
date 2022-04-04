@@ -167,7 +167,7 @@ As you can see, the use case is very similar to using `fader` with an array, but
 
 ### Triggering sounds
 
-#### `set_trigger(row, col) { ... }`
+#### `set_trigger(row, col, [options]) { ... }`
 
 You can trigger any code (typically a call to `play` or `sample`, but it can be anything) by pressing a button in the grid using the `set_trigger` function at the top level (outside any live loop). The button will turn yellow (to mark that it can no longer be used as switch), and whenever you press it, the code will be triggered:
 
@@ -175,7 +175,7 @@ You can trigger any code (typically a call to `play` or `sample`, but it can be 
 set_trigger(0, 0) { sample :bd_haus }
 ```
 
-#### The `release` option
+##### The `release` option
 
 In general, the code will be triggered when you press and there will be no control of the length of the sound: it will play for its whole length (or, apply any envelope options you pass to `play`/`sample`). If you want to control the length of the sound _with_ the button, you can call `set_trigger` with the `release` option. The sound will play for as long you keep pressing the button. When you release it, it will stop the sound in n (the passed number) beats. If you want it to stop immediately, pass `release: 0` (but that won't probably sound very well).
 
@@ -187,6 +187,10 @@ end
 ```
 
 For the `release` option to work, the block **has** to return a _node_, that's it, it must be a call to `play` or `sample` (or variants like `play_chord`).
+
+#### `reset_trigger(row, col, [options])`
+
+To remove the trigger from the button (and make it available again as switch), you just need to prepend `re` (the signature is the same).
 
 ### Looping with the grid
 
@@ -250,7 +254,7 @@ Assigns a series of consecutive buttons starting at `row`, `col`, to play `notes
 free_play 0, 0, :fm, scale(:c3, :major), amp: 0.8
 ```
 
-#### `reset_free_play(row, col, notes, [options])`
+#### `reset_free_play(row, col, synth, notes, [options])`
 
 If you want to remove a free play mapping (so that the buttons are again available as switches), you need to call `reset_free_play`. It has the same signature so you can just prepend `reset_` to the previous call.
 
