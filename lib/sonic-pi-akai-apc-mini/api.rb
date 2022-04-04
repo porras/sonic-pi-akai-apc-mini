@@ -42,8 +42,9 @@ module SonicPiAkaiApcMini
       midi_note_on note_number, Controller.model.light_yellow
       live_loop "global_trigger_#{note_number}" do
         use_real_time
-        _v = sync("note_on_#{note_number}")
-        with_fx :level, amp: 1 do |fx|
+        v, _ = sync("note_on_#{note_number}")
+        # if the event is "fake" we set level to 0
+        with_fx :level, amp: (v == :ignore ? 0 : 1) do |fx|
           node = block.call
           if release
             sync("note_off_#{note_number}")
@@ -52,6 +53,10 @@ module SonicPiAkaiApcMini
           end
         end
       end
+      # Trigger "fake" notes with :ignore value so that the loop that is waiting
+      # for a note silently goes for a new iteration (with the new definition)
+      cue "note_on_#{note_number}", :ignore
+      cue "note_off_#{note_number}", :ignore
     end
 
     # Same signature as `set_trigger` for convenience

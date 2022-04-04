@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After a refactor, the behavior and signature of `free_play` and
   `reset_free_play` changed. See README.md
 
+### Fixed
+
+- More than a bug it was a "known annoying behavior": because of the way `sync`
+  works, whenever we would redefine a trigger or free play, we would still react
+  with the old definition to the next event, and _then_ reload it. I implemented
+  a workaround so that it behaves in a more intuitive way: the next event will
+  already trigger the new definition.
+
 ## [0.3.0] - 2022-02-10
 
 ### Added 
