@@ -9,6 +9,12 @@ RSpec.describe SonicPiAkaiApcMini::Helpers do
       expect(described_class.normalize(127, (0..100))).to eq 100
     end
 
+    it 'supports reversed ranges' do
+      expect(described_class.normalize(0, (100..0))).to eq 100
+      expect(described_class.normalize(64, (100..0))).to be_within(1).of(50)
+      expect(described_class.normalize(127, (100..0))).to eq 0
+    end
+
     it 'supports arrays' do
       expect(described_class.normalize(0, %i[a b c])).to eq :a
       expect(described_class.normalize(64, %i[a b c])).to eq :b

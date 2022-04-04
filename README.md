@@ -59,6 +59,12 @@ with_fx :slicer, phase: fader(0, [0.125, 0.25, 0.5]) do
 end
 ```
 
+The range can be _upside-down_, if that makes sense for the case. This will play the sound unmodified when the fader is at 0 (127 is the maximum cutoff value), and start cutting off frequencies when the fader is further up.
+
+```ruby
+sample :bd_haus, cutoff: fader(0, (127..100))
+```
+
 `fader` also accepts the special value `:pan`, which maps to `(-1..1)`, for that very obvious usecase:
 
 ```ruby
