@@ -159,6 +159,29 @@ play_chord selector(6, 0, [chord(:e3, :minor), chord(:g3, :major), chord(:d3, :m
 
 As you can see, the use case is very similar to using `fader` with an array, but it is a better UI for many cases. Sadly, it doesn't work perfectly at the moment, so you might prefer to stick with `fader`.
 
+### Triggering sounds
+
+#### `set_trigger(row, col) { ... }`
+
+You can trigger any code (typically a call to `play` or `sample`, but it can be anything) by pressing a button in the grid using the `set_trigger` function at the top level (outside any live loop). The button will turn yellow (to mark that it can no longer be used as switch), and whenever you press it, the code will be triggered:
+
+```ruby
+set_trigger(0, 0) { sample :bd_haus }
+```
+
+#### The `release` option
+
+In general, the code will be triggered when you press and there will be no control of the length of the sound: it will play for its whole length (or, apply any envelope options you pass to `play`/`sample`). If you want to control the length of the sound _with_ the button, you can call `set_trigger` with the `release` option. The sound will play for as long you keep pressing the button. When you release it, it will stop the sound in n (the passed number) beats. If you want it to stop immediately, pass `release: 0` (but that won't probably sound very well).
+
+```
+set_trigger(0, 0, release: 0.5) do
+  use_synth :prophet
+  play_chord chord(:c3, :major), sustain: 999 # so that it really lasts until you release
+end
+```
+
+For the `release` option to work, the block **has** to return a _node_, that's it, it must be a call to `play` or `sample` (or variants like `play_chord`).
+
 ### Looping with the grid
 
 One of the most useful uses of the grid is _looping_. You can set it up so that you can punch notes in the grid, that will be played in loop. This is great (but not only) for drum loops.
@@ -227,6 +250,27 @@ end
 #### `reset_free_play(row, col, notes, [options])`
 
 If you want to remove a free play mapping (so that the buttons are again available as switches), you need to call `reset_free_play`. It has the same signature so you can just prepend `reset_` to the previous call.
+
+### F.A.Q./"Tricks"
+
+#### Can I use `set_trigger`'s `release` option when I'm triggering more than one sound?
+
+This option assumes 1) that the bock returns immediately 2) that it returns a synth node (because it uses `control` underneath). That said, you can do this (admittedly ugly) trick, so that you fulfill those assumptions even when you're not:
+
+```ruby
+set_trigger(0, 0, release: 1) do
+  wrap = nil
+  with_fx :level do |fx|
+    wrap = fx
+    in_thread do
+      play_pattern_timed chord(:c3, :major).mirror, 0.5
+    end
+  end
+  wrap
+end
+```
+
+Note the use of `in_thread` so that the block returns immediately even if it started playing a sequence that's going to take 3 beats, and the use of the `level` fx (without parameters, so it will really do nothing) and a variable so that we return the fx node, which is the one that will be silenced when we release the button. Ugly, but works (you can probably define a convenience function if you're going to use this trick often).
 
 ### Roadmap of planned features
 
