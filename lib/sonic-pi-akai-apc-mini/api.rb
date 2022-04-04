@@ -73,7 +73,9 @@ module SonicPiAkaiApcMini
       last_col = [Controller.model.grid_columns - 1, first_col + notes.size - 1].min
       (first_col..last_col).each.with_index do |col, i| 
         set_trigger(row, col, release: options[:release] || 1) do
-          synth synth_name, { note: notes[i], sustain: 9999 }.merge(options.except(:release))
+          # options.except(:release) in Ruby <= 2.7:
+          options_except_release = options.reject { |k, _v| k == :release }
+          synth synth_name, { note: notes[i], sustain: 9999 }.merge(options_except_release)
         end
       end
     end
