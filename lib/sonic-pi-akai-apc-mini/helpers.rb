@@ -4,10 +4,10 @@ module SonicPiAkaiApcMini
 
     # Normalizes a MIDI velocity value (between 0 and 127) to the corresponding
     # value in `target`, which can be a range, a ring/array, or the special
-    # value :pan (shortcut for (-1..1)).
+    # value :pan (shortcut for -1..1).
     def normalize(value, target)
       value /= 127.0
-      target = (-1..1) if target == :pan
+      target = -1..1 if target == :pan
       case target
       when Range
         target.begin + (value * (target.end - target.begin))
@@ -31,7 +31,7 @@ module SonicPiAkaiApcMini
       last = first + size - 1
       end_of_row = key(row, Controller.model.grid_columns - 1)
 
-      (first..[last, end_of_row].min)
+      first..[last, end_of_row].min
     end
 
     def key(row, col)

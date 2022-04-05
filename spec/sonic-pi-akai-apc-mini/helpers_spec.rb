@@ -4,15 +4,15 @@ require 'sonic-pi-akai-apc-mini/controller'
 RSpec.describe SonicPiAkaiApcMini::Helpers do
   describe '#normalize' do
     it 'supports ranges' do
-      expect(described_class.normalize(0, (0..100))).to eq 0
-      expect(described_class.normalize(64, (0..100))).to be_within(1).of(50)
-      expect(described_class.normalize(127, (0..100))).to eq 100
+      expect(described_class.normalize(0, 0..100)).to eq 0
+      expect(described_class.normalize(64, 0..100)).to be_within(1).of(50)
+      expect(described_class.normalize(127, 0..100)).to eq 100
     end
 
     it 'supports reversed ranges' do
-      expect(described_class.normalize(0, (100..0))).to eq 100
-      expect(described_class.normalize(64, (100..0))).to be_within(1).of(50)
-      expect(described_class.normalize(127, (100..0))).to eq 0
+      expect(described_class.normalize(0, 100..0)).to eq 100
+      expect(described_class.normalize(64, 100..0)).to be_within(1).of(50)
+      expect(described_class.normalize(127, 100..0)).to eq 0
     end
 
     it 'supports arrays' do
@@ -37,28 +37,28 @@ RSpec.describe SonicPiAkaiApcMini::Helpers do
       let(:model_name) { :apc_mini }
 
       it 'returns the MIDI note for a button' do
-        expect(described_class.key_range(0, 0, 1)).to eq(0..0)
+        expect(described_class.key_range(0, 0, 1)).to eq 0..0
       end
 
       it 'returns the MIDI notes for three buttons' do
-        expect(described_class.key_range(0, 0, 3)).to eq(0..2)
+        expect(described_class.key_range(0, 0, 3)).to eq 0..2
       end
 
       it 'calculates the right MIDI notes away from the origin' do
-        expect(described_class.key_range(2, 2, 3)).to eq(18..20)
+        expect(described_class.key_range(2, 2, 3)).to eq 18..20
       end
 
       it 'does not exceed the end of the row' do
-        expect(described_class.key_range(0, 6, 6)).to eq(6..7)
+        expect(described_class.key_range(0, 6, 6)).to eq 6..7
       end
 
       it 'errors out when trying to use a row higher than 7' do
-        expect(described_class.key_range(7, 0, 1)).to eq(56..56)
+        expect(described_class.key_range(7, 0, 1)).to eq 56..56
         expect { described_class.key_range(8, 0, 1) }.to raise_error(described_class::RangeError)
       end
 
       it 'errors out when trying to use a column higher than 7' do
-        expect(described_class.key_range(0, 7, 1)).to eq(7..7)
+        expect(described_class.key_range(0, 7, 1)).to eq 7..7
         expect { described_class.key_range(0, 8, 1) }.to raise_error(described_class::RangeError)
       end
     end
@@ -67,16 +67,16 @@ RSpec.describe SonicPiAkaiApcMini::Helpers do
       let(:model_name) { :apc_key_25 }
 
       it 'returns the MIDI note for a button' do
-        expect(described_class.key_range(0, 0, 1)).to eq(0..0)
+        expect(described_class.key_range(0, 0, 1)).to eq 0..0
       end
 
       it 'errors out when trying to use a row higher than 4' do
-        expect(described_class.key_range(4, 0, 1)).to eq(32..32)
+        expect(described_class.key_range(4, 0, 1)).to eq 32..32
         expect { described_class.key_range(5, 0, 1) }.to raise_error(described_class::RangeError)
       end
 
       it 'errors out when trying to use a column higher than 7' do
-        expect(described_class.key_range(0, 7, 1)).to eq(7..7)
+        expect(described_class.key_range(0, 7, 1)).to eq 7..7
         expect { described_class.key_range(0, 8, 1) }.to raise_error(described_class::RangeError)
       end
     end

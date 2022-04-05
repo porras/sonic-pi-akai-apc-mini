@@ -31,8 +31,8 @@ use_bpm 110
 
 live_loop :drums do
   loop_rows(4, {
-              1 => -> { sample :drum_bass_soft, amp: fader(0), cutoff: fader(1, (60..127)) },
-              0 => -> { sample :drum_snare_soft, amp: fader(2), cutoff: fader(3, (60..127)) }
+              1 => -> { sample :drum_bass_soft, amp: fader(0), cutoff: fader(1, 60..127) },
+              0 => -> { sample :drum_snare_soft, amp: fader(2), cutoff: fader(3, 60..127) }
             })
 end
 

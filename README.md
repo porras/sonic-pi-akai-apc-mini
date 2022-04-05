@@ -44,11 +44,11 @@ A small set of functions get added to the Sonic Pi API, in order to use the cont
 
 #### `fader(n, [target-values])`
 
-This function lets you use any of the faders to control the value of _anything_ in Sonic Pi. `n` is the fader number (starting from 0, left to right). `target-values` is the range of values the fader will map to (and defaults to `(0..1)`\*). Some examples:
+This function lets you use any of the faders to control the value of _anything_ in Sonic Pi. `n` is the fader number (starting from 0, left to right). `target-values` is the range of values the fader will map to (and defaults to `0..1`\*). Some examples:
 
 ```ruby
 play :c4, amp: fader(0)
-sample :bd_haus, cutoff: fader(1, (60..127))
+sample :bd_haus, cutoff: fader(1, 60..127)
 ```
 
 `target-values` is typically a range, but it can also be an array or a ring. In that case, the range of the fader is divided into discrete regions, each of them mapped to a value:
@@ -62,10 +62,10 @@ end
 The range can be _upside-down_, if that makes sense for the case. This will play the sound unmodified when the fader is at 0 (127 is the maximum cutoff value), and start cutting off frequencies when the fader is further up.
 
 ```ruby
-sample :bd_haus, cutoff: fader(0, (127..100))
+sample :bd_haus, cutoff: fader(0, 127..100)
 ```
 
-`fader` also accepts the special value `:pan`, which maps to `(-1..1)`, for that very obvious usecase:
+`fader` also accepts the special value `:pan`, which maps to `-1..1`, for that very obvious usecase:
 
 ```ruby
 play :c4, pan: fader(0, :pan)
@@ -74,10 +74,10 @@ play :c4, pan: fader(0, :pan)
 Finally, it is possible to use the same fader for two different things, with two different target values, if that makes sense for your music:
 
 ```ruby
-play :c4, amp: fader(0, (0.8..1.5)), pan: fader(0, :pan)
+play :c4, amp: fader(0, 0.8..1.5), pan: fader(0, :pan)
 ```
 
-\*In reality, `(0..0.999)`. The reason is that there are many parameters with range [0, 1), that is, between 0 and 1 but **not** 1, for example a synth's `res` (resonance). This weird default helps with this case while making no difference for the normal case. If you **really** need to be able to get to 1, then pass `(0..1)` explicitly.
+\*In reality, `0..0.999`. The reason is that there are many parameters with range [0, 1), that is, between 0 and 1 but **not** 1, for example a synth's `res` (resonance). This weird default helps with this case while making no difference for the normal case. If you **really** need to be able to get to 1, then pass `0..1` explicitly.
 
 #### `attach_fader(n, node, property, [target-values])`
 
@@ -95,7 +95,7 @@ Or:
 ```ruby
 live_loop :drums do
   drums = sample :loop_amen, beat_stretch: 4
-  attach_fader(0, drums, :cutoff, (60..120))
+  attach_fader(0, drums, :cutoff, 60..120)
   sleep 4
 end
 ```
@@ -218,7 +218,7 @@ A typical use case of looping is calling a synth (always the same) with differen
 
 ```ruby
 live_loop :bassline do
-  loop_rows_synth(8, (0..2), chord(:c2, :minor))
+  loop_rows_synth(8, 0..2, chord(:c2, :minor))
 end
 ```
 
@@ -228,7 +228,7 @@ You can pass options, that will be applied to each note:
 
 ```ruby
 live_loop :bassline do
-  loop_rows_synth(8, (0..2), chord(:c2, :minor), amp: 0.8)
+  loop_rows_synth(8, 0..2, chord(:c2, :minor), amp: 0.8)
 end
 ```
 
@@ -236,7 +236,7 @@ And, if you need those options to be evaluated separately for each note (because
 
 ```ruby
 live_loop :bassline do
-  loop_rows_synth(8, (0..2), chord(:c2, :minor), -> {{ pan: rrand(-1..1), cutoff: fader(5, (60..120)) }}
+  loop_rows_synth(8, 0..2, chord(:c2, :minor), -> {{ pan: rrand(-1, 1), cutoff: fader(5, 60..120) }}
 end
 ```
 
