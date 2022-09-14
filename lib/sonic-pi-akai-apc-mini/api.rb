@@ -42,7 +42,7 @@ module SonicPiAkaiApcMini
       midi_note_on note_number, Controller.model.light_yellow
       live_loop "global_trigger_#{note_number}" do
         use_real_time
-        v, _ = sync("note_on_#{note_number}")
+        v, = sync("note_on_#{note_number}")
         # if the event is "fake" we set level to 0
         with_fx :level, amp: (v == :ignore ? 0 : 1) do |fx|
           node = block.call
@@ -69,9 +69,10 @@ module SonicPiAkaiApcMini
 
     def free_play(row, first_col, synth_name, notes, options = {})
       return if notes.empty?
+
       # consider only as many notes as they fit before the end of the row
       last_col = [Controller.model.grid_columns - 1, first_col + notes.size - 1].min
-      (first_col..last_col).each.with_index do |col, i| 
+      (first_col..last_col).each.with_index do |col, i|
         set_trigger(row, col, release: options[:release] || 1) do
           # options.except(:release) in Ruby <= 2.7:
           options_except_release = options.reject { |k, _v| k == :release }
@@ -83,9 +84,10 @@ module SonicPiAkaiApcMini
     # Same signature as `free_play` for convenience
     def reset_free_play(row, first_col, _, notes, *_)
       return if notes.empty?
+
       # consider only as many notes as they fit before the end of the row
       last_col = [Controller.model.grid_columns - 1, first_col + notes.size - 1].min
-      (first_col..last_col).each do |col| 
+      (first_col..last_col).each do |col|
         reset_trigger(row, col)
       end
     end
