@@ -16,3 +16,7 @@ Naming/FileName:
   Exclude:
     - 'lib/sonic-pi-akai-apc-mini.rb'
     - 'spec/sonic-pi-akai-apc-mini_spec.rb'
+
+require:
+  - rubocop-rspec
+  - rubocop-rake
