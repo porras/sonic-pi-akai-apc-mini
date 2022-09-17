@@ -7,6 +7,7 @@ load "#{dir}/core_extensions/range.rb"
 load "#{dir}/helpers.rb"
 load "#{dir}/api.rb"
 load "#{dir}/controller.rb"
+load "#{dir}/lights_panel.rb"
 
 # bypass the mechanism that avoids hot-changing the model, forcing a reload of
 # the config on each call:

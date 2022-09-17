@@ -39,7 +39,7 @@ module SonicPiAkaiApcMini
     def set_trigger(row, col, release: nil, &block)
       note_number = Helpers.key(row, col)
       set "reserved_#{note_number}", true
-      midi_note_on note_number, Controller.model.light_yellow
+      @panel.set note_number => Controller.model.light_yellow
       live_loop "global_trigger_#{note_number}" do
         use_real_time
         v, = sync("note_on_#{note_number}")
@@ -63,7 +63,7 @@ module SonicPiAkaiApcMini
     def reset_trigger(row, col, *_)
       note_number = Helpers.key(row, col)
       set "reserved_#{note_number}", false
-      midi_note_on note_number, (switch?(row, col) ? Controller.model.light_green : Controller.model.light_off)
+      @panel.set note_number => (switch?(row, col) ? Controller.model.light_green : Controller.model.light_off)
       live_loop("global_trigger_#{note_number}") { stop }
     end
 
@@ -95,11 +95,16 @@ module SonicPiAkaiApcMini
     def loop_rows(duration, rows)
       first_row = rows.keys.max
       Controller.model.grid_columns.times do |beat|
-        prev = (beat - 1) % 8
-        prev_key = Helpers.key(first_row, prev)
-        beat_key = Helpers.key(first_row, beat)
-        midi_note_on prev_key, get("switch_#{prev_key}") ? Controller.model.light_green : Controller.model.light_off
-        midi_note_on beat_key, Controller.model.light_yellow
+        Controller.model.grid_columns.times do |i|
+          @panel[Helpers.key(first_row, i)] = if i == beat
+                                                Controller.model.light_yellow
+                                              elsif switch?(first_row, i)
+                                                Controller.model.light_green
+                                              else
+                                                Controller.model.light_off
+                                              end
+        end
+        @panel.flush
         rows.each do |row, sound|
           in_thread(&sound) if switch?(row, beat)
         end
@@ -124,12 +129,13 @@ module SonicPiAkaiApcMini
       set "selector_current_value_#{krange}", 0 if get("selector_current_value_#{krange}").nil?
       krange.each.with_index do |key, i|
         set "selector_keys_#{key}", krange.to_a
-        midi_note_on key, i == get("selector_current_value_#{krange}") ? 1 : 3
+        @panel.set key => (i == get("selector_current_value_#{krange}") ? 1 : 3)
       end
       values[get("selector_current_value_#{krange}")]
     end
 
     def initialize_akai(model)
+      @panel ||= LightsPanel.new(default: 0) { |note, value| midi_note_on note, value }
       Controller.model = model
       # This loop manages faders. Whenever they change, the new value is stored via set,
       # and the corresponding light is turned on/off.
@@ -140,8 +146,7 @@ module SonicPiAkaiApcMini
         set "fader_#{fader_number}", value
         if Controller.model.fader_light_offset
           light_note_number = note_number + Controller.model.fader_light_offset
-          midi_note_on light_note_number,
-                       value.zero? ? Controller.model.light_off : Controller.model.light_red
+          @panel.set light_note_number => (value.zero? ? Controller.model.light_off : Controller.model.light_red)
         end
       end
 
@@ -169,14 +174,15 @@ module SonicPiAkaiApcMini
 
         if keys = get("selector_keys_#{n}")
           keys.each do |k|
-            midi_note_on k, 3
+            @panel[k] = 3
           end
-          midi_note_on n, 1
+          @panel[k] = 1
+          @panel.flush
           set "selector_current_value_#{keys.first}..#{keys.last}", n - keys.first
         else
           new_value = !get("switch_#{n}", false)
           set "switch_#{n}", new_value
-          midi_note_on n, (new_value ? Controller.model.light_green : Controller.model.light_off)
+          @panel.set n => (new_value ? Controller.model.light_green : Controller.model.light_off)
         end
       end
     end
