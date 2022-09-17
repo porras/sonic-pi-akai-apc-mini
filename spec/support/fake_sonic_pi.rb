@@ -74,7 +74,7 @@ class FakeSonicPi
       # find event in current beat and return its value, otherwise let the other
       # fibers progress, then try again
       if event = @events.find(@beat, event_name)
-        event.processed = true
+        event.processed_by << Fiber.current
         return event.value
       else
         Fiber.yield nil

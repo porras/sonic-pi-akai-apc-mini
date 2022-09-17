@@ -1,9 +1,9 @@
 class Events
   attr_reader :events
 
-  Event = Struct.new(:name, :value, :processed) do
+  Event = Struct.new(:name, :value, :processed_by) do
     def initialize(name, value)
-      super(name, value, false)
+      super(name, value, Set.new)
     end
   end
 
@@ -20,7 +20,7 @@ class Events
   end
 
   def find(beat, name)
-    @events.find { |b, e| b == beat && e.name == name && !e.processed }&.last
+    @events.find { |b, e| b == beat && e.name == name && !e.processed_by.include?(Fiber.current) }&.last
   end
 
   def add_batch(events)
