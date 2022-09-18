@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a workaround so that it behaves in a more intuitive way: the next event will
   already trigger the new definition.
 
+### Removed
+
+- An extension to `Range` that was no longer in use since a refactor long ago.
+
 ## [0.3.0] - 2022-02-10
 
 ### Added 

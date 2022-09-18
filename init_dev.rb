@@ -3,7 +3,6 @@
 
 dir = File.join(__dir__, 'lib', 'sonic-pi-akai-apc-mini')
 
-load "#{dir}/core_extensions/range.rb"
 load "#{dir}/helpers.rb"
 load "#{dir}/api.rb"
 load "#{dir}/controller.rb"
