@@ -12,11 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `set_trigger` and `reset_trigger` methods
 - Reversed ranges (they already worked but that was an undocumented feature, now
   it's part of the API)
+- `release` option for `free_play`
 
 ### Changed
 
 - After a refactor, the behavior and signature of `free_play` and
   `reset_free_play` changed. See README.md
+- General performance and stability improvement, through a couple of refactors:
+  - The aforementioned rewrite of `free_play`.
+  - An utility class that keeps track of the current state of the lights panel
+    and avoids unnecessary updates.
 
 ### Fixed
 
