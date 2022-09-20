@@ -36,10 +36,10 @@ module SonicPiAkaiApcMini
       end
     end
 
-    def set_trigger(row, col, release: nil, &block)
+    def set_trigger(row, col, release: nil, light: true, ignores: true, &block)
       note_number = Helpers.key(row, col)
       set "reserved_#{note_number}", true
-      @panel.set note_number => Controller.model.light_yellow
+      @panel.set note_number => Controller.model.light_yellow if light
       live_loop "global_trigger_#{note_number}" do
         use_real_time
         v, = sync("note_on_#{note_number}")
@@ -53,6 +53,8 @@ module SonicPiAkaiApcMini
           end
         end
       end
+      return unless ignores
+
       # Trigger "fake" notes with :ignore value so that the loop that is waiting
       # for a note silently goes for a new iteration (with the new definition)
       cue "note_on_#{note_number}", :ignore
@@ -123,15 +125,27 @@ module SonicPiAkaiApcMini
     end
 
     def selector(row, col, values)
-      # TODO: selector is quite messy. It can use a refactor and proper reset/cleanup.
-      krange = Helpers.key_range(row, col, values.size)
-      set "selector_values_#{krange}", values.ring
-      set "selector_current_value_#{krange}", 0 if get("selector_current_value_#{krange}").nil?
-      krange.each.with_index do |key, i|
-        set "selector_keys_#{key}", krange.to_a
-        @panel.set key => (i == get("selector_current_value_#{krange}") ? 1 : 3)
+      # Still a bit messy but at least robust and relatively performant
+      # TODO: It could be made _more_ performant by implementing some kind of cache (no need to redefine the triggers if nothing changed)
+      identifier = "selector_#{row}_#{col}_#{values.size}"
+      select_option = lambda do |i|
+        set identifier, i
+        values.size.times do |j|
+          @panel[Helpers.key(row, col + j)] = if i == j
+                                                Controller.model.light_green
+                                              else
+                                                Controller.model.light_red
+                                              end
+        end
+        @panel.flush
       end
-      values[get("selector_current_value_#{krange}")]
+      values.size.times do |i|
+        set_trigger(row, col + i, light: false, ignores: false) do
+          select_option.call(i)
+        end
+      end
+      select_option.call(0) unless get(identifier)
+      values[get(identifier)]
     end
 
     def initialize_akai(model)
@@ -162,28 +176,18 @@ module SonicPiAkaiApcMini
         cue "note_off_#{note_number}", value
       end
 
-      # Manages the buttons in the grid, both as switches and selectors.
-      # Whenever one is pressed, we check if it is "reserved" (for triggers or
-      # free play). If it is, we ignore it (it has its own loop handling it). If
-      # it's not, we check if its used as a selector and manage it. Otherwise,
-      # we manage it as a switch.
-      live_loop :switches_and_selectors do
+      # Manages the buttons in the grid as switches. Whenever one is pressed, we
+      # check if it is "reserved" (for triggers or free play). If it is, we
+      # ignore it (it has its own loop handling it). If it's not, we manage it
+      # as a switch.
+      live_loop :_switches do
         use_real_time
         n, _vel = sync(Controller.model.midi_event(:note_on))
         next if get("reserved_#{n}")
 
-        if keys = get("selector_keys_#{n}")
-          keys.each do |k|
-            @panel[k] = 3
-          end
-          @panel[k] = 1
-          @panel.flush
-          set "selector_current_value_#{keys.first}..#{keys.last}", n - keys.first
-        else
-          new_value = !get("switch_#{n}", false)
-          set "switch_#{n}", new_value
-          @panel.set n => (new_value ? Controller.model.light_green : Controller.model.light_off)
-        end
+        new_value = !get("switch_#{n}", false)
+        set "switch_#{n}", new_value
+        @panel.set n => (new_value ? Controller.model.light_green : Controller.model.light_off)
       end
     end
   end
