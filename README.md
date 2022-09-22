@@ -141,8 +141,6 @@ The buttons will light green when they're on.
 
 ### Selectors
 
-_NOTE: This feature is experimental. It mostly works, but its performance is quite bad and is one of the things that incresases the chance of crashes._
-
 Selectors are a special kind of switches. You can map a series of consecutive buttons in the grid, to different values. Only one of them will be active at the time (lighting green, while the others light red).
 
 #### `selector(row, col, target-values)`
@@ -281,7 +279,6 @@ Note the use of `in_thread` so that the block returns immediately even if it sta
 
 ### Roadmap of planned features
 
-* A `selector` that actually works
 * Free play with samples
 * Make it possible to attach/set the same fader more than once
 * Better performance and stability in general
