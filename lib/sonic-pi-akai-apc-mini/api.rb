@@ -148,6 +148,12 @@ module SonicPiAkaiApcMini
       values[get(identifier)]
     end
 
+    def reset_selector(row, col, values)
+      values.size.times do |i|
+        reset_trigger(row, col + i)
+      end
+    end
+
     def initialize_akai(model)
       @panel ||= LightsPanel.new(default: 0) { |note, value| midi_note_on note, value }
       Controller.model = model

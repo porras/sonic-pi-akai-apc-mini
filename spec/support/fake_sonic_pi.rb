@@ -101,6 +101,10 @@ class FakeSonicPi
     yield
   end
 
+  def stop
+    sleep 999
+  end
+
   # commands we store as output, returning a (fake) node
   %i[play sample synth control midi_note_on set_volume!].each do |command|
     define_method(command) do |*args|
