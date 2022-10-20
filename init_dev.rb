@@ -1,7 +1,7 @@
 # Script to be used in development. Instead of `require '.../init'` from
 # SonicPi, `load '.../init_dev.rb'` and code will be reloaded on each Alt+R.
 
-dir = File.join(__dir__, 'lib', 'sonic-pi-akai-apc-mini')
+dir = File.join(__dir__, "lib", "sonic-pi-akai-apc-mini")
 
 load "#{dir}/helpers.rb"
 load "#{dir}/api.rb"

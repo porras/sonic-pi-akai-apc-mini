@@ -1,5 +1,5 @@
-RSpec.describe 'free_play' do
-  example 'playing three notes on a piano' do
+RSpec.describe "free_play" do
+  example "playing three notes on a piano" do
     sp = FakeSonicPi.new do
       include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
@@ -8,13 +8,13 @@ RSpec.describe 'free_play' do
     end
 
     sp.run(3, events: [
-             [0.30, '/midi:apc_mini*/note_on', [0, 127]],
-             [0.35, '/midi:apc_mini*/note_off', [0, 127]],
-             [1.30, '/midi:apc_mini*/note_on', [1, 127]],
-             [1.45, '/midi:apc_mini*/note_off', [1, 127]],
-             [2.30, '/midi:apc_mini*/note_on', [2, 127]],
-             [2.45, '/midi:apc_mini*/note_off', [2, 127]]
-           ])
+      [0.30, "/midi:apc_mini*/note_on", [0, 127]],
+      [0.35, "/midi:apc_mini*/note_off", [0, 127]],
+      [1.30, "/midi:apc_mini*/note_on", [1, 127]],
+      [1.45, "/midi:apc_mini*/note_off", [1, 127]],
+      [2.30, "/midi:apc_mini*/note_on", [2, 127]],
+      [2.45, "/midi:apc_mini*/note_off", [2, 127]]
+    ])
 
     # yellow lights
     expect(sp).to have_output(:midi_note_on, 0, 5).at(0)

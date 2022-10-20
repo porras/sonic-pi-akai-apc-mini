@@ -1,5 +1,5 @@
-RSpec.describe 'selector' do
-  example 'using a selector to play one note from a chord' do
+RSpec.describe "selector" do
+  example "using a selector to play one note from a chord" do
     sp = FakeSonicPi.new do
       include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
@@ -11,10 +11,10 @@ RSpec.describe 'selector' do
     end
 
     sp.run(4, events: [
-             [1.5, '/midi:apc_mini*/note_on', [1, 127]],
-             [2.5, '/midi:apc_mini*/note_on', [2, 127]],
-             [3.5, '/midi:apc_mini*/note_on', [0, 127]]
-           ])
+      [1.5, "/midi:apc_mini*/note_on", [1, 127]],
+      [2.5, "/midi:apc_mini*/note_on", [2, 127]],
+      [3.5, "/midi:apc_mini*/note_on", [0, 127]]
+    ])
 
     # first light goes green at the beginning, the other two red
     expect(sp).to have_output(:midi_note_on, 0, 1).at(0)
@@ -39,7 +39,7 @@ RSpec.describe 'selector' do
     expect(sp).to have_output(:play, :e2).at(3)
   end
 
-  example 'reset selector' do
+  example "reset selector" do
     sp = FakeSonicPi.new do
       include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
@@ -64,10 +64,10 @@ RSpec.describe 'selector' do
     end
 
     sp.run(4, events: [
-             [0.5, '/midi:apc_mini*/note_on', [1, 127]], # turn switch on
-             [1.5, '/midi:apc_mini*/note_on', [2, 127]], # now it's a selector, switch to 2
-             [3.5, '/midi:apc_mini*/note_on', [1, 127]] # now it's no more a selector, acts as switch
-           ])
+      [0.5, "/midi:apc_mini*/note_on", [1, 127]], # turn switch on
+      [1.5, "/midi:apc_mini*/note_on", [2, 127]], # now it's a selector, switch to 2
+      [3.5, "/midi:apc_mini*/note_on", [1, 127]] # now it's no more a selector, acts as switch
+    ])
 
     # lights (after resetting the selector)
     expect(sp).to have_output(:midi_note_on, 0, 0).at(3) # turn off

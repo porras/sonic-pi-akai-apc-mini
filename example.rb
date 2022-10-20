@@ -31,20 +31,20 @@ use_bpm 110
 
 live_loop :drums do
   loop_rows(4, {
-              1 => -> { sample :drum_bass_soft, amp: fader(0), cutoff: fader(1, 60..127) },
-              0 => -> { sample :drum_snare_soft, amp: fader(2), cutoff: fader(3, 60..127) }
-            })
+    1 => -> { sample :drum_bass_soft, amp: fader(0), cutoff: fader(1, 60..127) },
+    0 => -> { sample :drum_snare_soft, amp: fader(2), cutoff: fader(3, 60..127) }
+  })
 end
 
 live_loop :bass, sync: :drums do
   sample :vinyl_hiss, sustain: 2, attack: 1, release: 1 if switch?(2, 0)
 
   crd = fader(4, [
-                chord(:c3, :major),
-                chord(:g3, :major),
-                chord(:a3, :minor),
-                chord(:e3, :major)
-              ])
+    chord(:c3, :major),
+    chord(:g3, :major),
+    chord(:a3, :minor),
+    chord(:e3, :major)
+  ])
 
   use_synth :blade
 
@@ -57,8 +57,8 @@ live_loop :bass, sync: :drums do
     attach_fader(7, fx, :room)
     16.times do
       play crd.choose + 12, release: 0.25, pan: rrand(-0.1, 0.1),
-                            amp: fader(6),
-                            on: spread(11, 16).tick(:note)
+        amp: fader(6),
+        on: spread(11, 16).tick(:note)
       sleep 0.25
     end
   end

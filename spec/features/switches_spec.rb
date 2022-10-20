@@ -1,5 +1,5 @@
-RSpec.describe 'switches' do
-  example 'using a switch to conditionally play a sample' do
+RSpec.describe "switches" do
+  example "using a switch to conditionally play a sample" do
     sp = FakeSonicPi.new do
       include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
@@ -11,11 +11,11 @@ RSpec.describe 'switches' do
     end
 
     sp.run(4, events: [
-             [0.5, '/midi:apc_mini*/note_on', [0, 127]],
-             [0.55, '/midi:apc_mini*/note_off', [0, 127]],
-             [3.5, '/midi:apc_mini*/note_on', [0, 127]],
-             [3.55, '/midi:apc_mini*/note_off', [0, 127]]
-           ])
+      [0.5, "/midi:apc_mini*/note_on", [0, 127]],
+      [0.55, "/midi:apc_mini*/note_off", [0, 127]],
+      [3.5, "/midi:apc_mini*/note_on", [0, 127]],
+      [3.55, "/midi:apc_mini*/note_off", [0, 127]]
+    ])
 
     # light goes green when key pressed and off when pressed again
     expect(sp).to have_output(:midi_note_on, 0, 1).at(0.5)

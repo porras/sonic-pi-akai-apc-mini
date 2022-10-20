@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-path_to_init = File.expand_path(File.join(__dir__, '..', 'init'))
+path_to_init = File.expand_path(File.join(__dir__, "..", "init"))
 
-if ARGV.first == 'path'
+if ARGV.first == "path"
   puts path_to_init
 else
   puts <<~RUBY

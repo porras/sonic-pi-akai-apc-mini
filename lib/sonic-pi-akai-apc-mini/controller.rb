@@ -9,17 +9,17 @@ module SonicPiAkaiApcMini
         if @_model.name == model_name
           return
         else
-          raise Error, 'Changing the model is not supported. Please restart Sonic Pi and initialize with new model name'
+          raise Error, "Changing the model is not supported. Please restart Sonic Pi and initialize with new model name"
         end
       end
 
-      config = Configs.fetch(model_name.to_sym) { raise Error, "model #{model_name} not supported" }
+      config = CONFIGS.fetch(model_name.to_sym) { raise Error, "model #{model_name} not supported" }
 
       @_model = Model.new(config.merge(name: model_name))
     end
 
     def model
-      @_model || raise(Error, 'model not initialized')
+      @_model || raise(Error, "model not initialized")
     end
 
     Model = Struct.new(
@@ -34,9 +34,9 @@ module SonicPiAkaiApcMini
       end
     end
 
-    Configs = {
+    CONFIGS = {
       apc_mini: {
-        midi_port: 'apc_mini*',
+        midi_port: "apc_mini*",
         grid_rows: 8,
         grid_columns: 8,
         grid_offset: 0,
@@ -50,7 +50,7 @@ module SonicPiAkaiApcMini
       },
       # TODO: Some assumptions here, check!
       apc_key_25: {
-        midi_port: 'apc_key_25*', # TODO: this is just a guess
+        midi_port: "apc_key_25*", # TODO: this is just a guess
         grid_rows: 5,
         grid_columns: 8,
         grid_offset: 0,

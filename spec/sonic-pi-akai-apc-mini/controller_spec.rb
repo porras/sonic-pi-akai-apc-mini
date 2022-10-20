@@ -1,7 +1,7 @@
-require 'sonic-pi-akai-apc-mini/controller'
+require "sonic-pi-akai-apc-mini/controller"
 
 RSpec.describe SonicPiAkaiApcMini::Controller do
-  it 'can be set but not changed' do
+  it "can be set but not changed" do
     expect { described_class.model }.to raise_error(described_class::Error)
 
     described_class.model = :apc_mini
@@ -13,7 +13,7 @@ RSpec.describe SonicPiAkaiApcMini::Controller do
     expect { described_class.model = :apc_key_25 }.to raise_error(described_class::Error)
   end
 
-  it 'raises an error with unsupported models' do
+  it "raises an error with unsupported models" do
     expect { described_class.model = :does_not_exist }.to raise_error(described_class::Error)
   end
 end

@@ -3,7 +3,7 @@ class SonicPiAkaiApcMini::LightsPanel
     @current = Hash.new(default)
     @changes = {}
     @mutex = Mutex.new
-    @block = block or raise StandardError, 'must provide a block'
+    @block = block or raise StandardError, "must provide a block"
   end
 
   def set(values = {})

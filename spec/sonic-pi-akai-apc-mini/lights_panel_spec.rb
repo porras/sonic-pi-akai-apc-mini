@@ -3,7 +3,7 @@ RSpec.describe SonicPiAkaiApcMini::LightsPanel do
 
   let(:operations) { [] }
 
-  it 'stores values' do
+  it "stores values" do
     panel.set(0 => 1, 1 => 2)
 
     expect(panel[0]).to eq 1
@@ -11,14 +11,14 @@ RSpec.describe SonicPiAkaiApcMini::LightsPanel do
     expect(operations).to eq [[0, 1], [1, 2]]
   end
 
-  it 'spares no-ops' do
+  it "spares no-ops" do
     panel.set(1 => 2)
     panel.set(1 => 2)
 
     expect(operations).to eq [[1, 2]]
   end
 
-  it 'groups operations' do
+  it "groups operations" do
     panel[0] = 1
     panel[1] = 2
 
@@ -31,7 +31,7 @@ RSpec.describe SonicPiAkaiApcMini::LightsPanel do
     expect(operations).to eq [[0, 1], [1, 2]]
   end
 
-  it 'spares operations by grouping' do
+  it "spares operations by grouping" do
     panel[0] = 1
 
     expect(panel[0]).to eq 1

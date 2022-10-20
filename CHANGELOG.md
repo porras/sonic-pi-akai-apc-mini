@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Other
 
 - Extracted `fake_sonic_pi` to a separate gem.
+- Switch from `rubocop` to `standardrb` (a noisy commit but hopefully the last
+  noise about this that we'll hear)
 
 ## [0.3.0] - 2022-02-10
 

@@ -8,7 +8,7 @@ module SonicPiAkaiApcMini
     # [0,1) as range and throw an error when passed 1 (e.g. tb303 synth's res).
     # It's not the most common usecase, but for the common use case it makes no
     # difference so I think it's a good default.
-    DEFAULT_TARGET = (0..0.999).freeze
+    DEFAULT_TARGET = (0..0.999)
 
     def fader(n, target = DEFAULT_TARGET)
       # TODO: Try to optimize speed, there is some latency because the
@@ -78,7 +78,7 @@ module SonicPiAkaiApcMini
         set_trigger(row, col, release: options[:release] || 1) do
           # options.except(:release) in Ruby <= 2.7:
           options_except_release = options.reject { |k, _v| k == :release }
-          synth synth_name, { note: notes[i], sustain: 9999 }.merge(options_except_release)
+          synth synth_name, {note: notes[i], sustain: 9999}.merge(options_except_release)
         end
       end
     end
@@ -99,12 +99,12 @@ module SonicPiAkaiApcMini
       Controller.model.grid_columns.times do |beat|
         Controller.model.grid_columns.times do |i|
           @panel[Helpers.key(first_row, i)] = if i == beat
-                                                Controller.model.light_yellow
-                                              elsif switch?(first_row, i)
-                                                Controller.model.light_green
-                                              else
-                                                Controller.model.light_off
-                                              end
+            Controller.model.light_yellow
+          elsif switch?(first_row, i)
+            Controller.model.light_green
+          else
+            Controller.model.light_off
+          end
         end
         @panel.flush
         rows.each do |row, sound|
@@ -132,10 +132,10 @@ module SonicPiAkaiApcMini
         set identifier, i
         values.size.times do |j|
           @panel[Helpers.key(row, col + j)] = if i == j
-                                                Controller.model.light_green
-                                              else
-                                                Controller.model.light_red
-                                              end
+            Controller.model.light_green
+          else
+            Controller.model.light_red
+          end
         end
         @panel.flush
       end

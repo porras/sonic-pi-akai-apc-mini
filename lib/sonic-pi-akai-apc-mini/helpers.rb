@@ -25,7 +25,7 @@ module SonicPiAkaiApcMini
     # at the end of the row. If the currently configured model has fewer
     # rows/columns, it raises a RangeError error.
     def key_range(row, col, size)
-      raise RangeError, 'out of range' if row >= Controller.model.grid_rows || col >= Controller.model.grid_columns
+      raise RangeError, "out of range" if row >= Controller.model.grid_rows || col >= Controller.model.grid_columns
 
       first = key(row, col)
       last = first + size - 1
