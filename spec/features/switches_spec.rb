@@ -1,6 +1,7 @@
 RSpec.describe 'switches' do
   example 'using a switch to conditionally play a sample' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :noise do

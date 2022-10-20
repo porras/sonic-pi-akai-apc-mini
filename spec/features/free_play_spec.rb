@@ -1,6 +1,7 @@
 RSpec.describe 'free_play' do
   example 'playing three notes on a piano' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       free_play(0, 0, :piano, %i[c3 d3 e3], amp: 2, release: 0.5)

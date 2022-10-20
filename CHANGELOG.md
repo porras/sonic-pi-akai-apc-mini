@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - An extension to `Range` that was no longer in use since a refactor long ago.
 
+### Other
+
+- Extracted `fake_sonic_pi` to a separate gem.
+
 ## [0.3.0] - 2022-02-10
 
 ### Added 

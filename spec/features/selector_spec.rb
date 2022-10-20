@@ -1,6 +1,7 @@
 RSpec.describe 'selector' do
   example 'using a selector to play one note from a chord' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :bass do
@@ -40,6 +41,7 @@ RSpec.describe 'selector' do
 
   example 'reset selector' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :bass do

@@ -1,6 +1,7 @@
 RSpec.describe 'loop_rows_synth' do
   example 'a pattern of two bass notes' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :bass do
@@ -28,6 +29,7 @@ RSpec.describe 'loop_rows_synth' do
 
   example 'with options' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :bass do
@@ -47,6 +49,7 @@ RSpec.describe 'loop_rows_synth' do
     allow(dummy).to receive(:something).and_return(2, 3, 4) # fake a ring or whatever
 
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :bass do

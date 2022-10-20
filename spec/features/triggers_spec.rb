@@ -1,6 +1,7 @@
 RSpec.describe 'triggers' do
   example 'simple trigger' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       set_trigger(0, 0) { sample :bd_haus }
@@ -24,6 +25,7 @@ RSpec.describe 'triggers' do
 
   example 'with release' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       set_trigger(0, 0, release: 0.3) { sample :bass_trance_c }

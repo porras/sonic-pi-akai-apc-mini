@@ -1,6 +1,7 @@
 RSpec.describe 'faders' do
   example 'direct use through #fader method' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :drum do
@@ -21,6 +22,7 @@ RSpec.describe 'faders' do
 
   example 'moving faders turns lights on and off' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
     end
 
@@ -35,6 +37,7 @@ RSpec.describe 'faders' do
 
   example 'using set_fader to control volume' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
       set_fader(8, 0..2) { |v| set_volume! v }
     end
@@ -51,6 +54,7 @@ RSpec.describe 'faders' do
 
   example 'using attach_fader to control a synth' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :synth do

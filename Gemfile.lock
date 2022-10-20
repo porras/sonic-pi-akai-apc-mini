@@ -10,6 +10,7 @@ GEM
     byebug (11.1.3)
     diff-lcs (1.5.0)
     docile (1.4.0)
+    fake_sonic_pi (0.1.0)
     json (2.6.2)
     parallel (1.22.1)
     parser (3.1.2.1)
@@ -61,6 +62,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
+  fake_sonic_pi
   rake
   rspec
   rubocop
@@ -70,4 +72,4 @@ DEPENDENCIES
   sonic-pi-akai-apc-mini!
 
 BUNDLED WITH
-   2.3.3
+   2.3.11

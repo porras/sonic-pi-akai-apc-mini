@@ -1,6 +1,7 @@
 RSpec.describe 'loop_rows' do
   example 'a drum pattern' do
     sp = FakeSonicPi.new do
+      include SonicPiAkaiApcMini::API
       initialize_akai(:apc_mini)
 
       live_loop :drums do

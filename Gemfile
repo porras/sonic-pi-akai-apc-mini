@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'byebug'
+gem 'fake_sonic_pi'
 gem 'rake'
 gem 'rspec'
 gem 'rubocop'

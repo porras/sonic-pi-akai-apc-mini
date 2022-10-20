@@ -4,8 +4,7 @@ SimpleCov.start do
 end
 require 'byebug'
 require 'sonic-pi-akai-apc-mini'
-require 'support/fake_sonic_pi'
-require 'support/matchers'
+require 'fake_sonic_pi/rspec'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
