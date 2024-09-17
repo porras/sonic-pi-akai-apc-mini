@@ -44,7 +44,7 @@ module SonicPiAkaiApcMini
         use_real_time
         v, = sync("note_on_#{note_number}")
         # if the event is "fake" we set level to 0
-        with_fx :level, amp: (v == :ignore ? 0 : 1) do |fx|
+        with_fx :level, amp: ((v == :ignore) ? 0 : 1) do |fx|
           node = block.call
           if release
             sync("note_off_#{note_number}")

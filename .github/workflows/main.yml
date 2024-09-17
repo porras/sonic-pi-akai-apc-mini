@@ -11,11 +11,11 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '2.7.0'
-          - '3.1.0'
+          - '3.1.2' # what Sonic Pi 4.5.1 bundles on Linux
+          - '3.3.5' # Current Ruby
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
